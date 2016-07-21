@@ -50,6 +50,16 @@ defmodule XGPS.Parser do
     {:pgtop, content}
   end
 
+  defp get_type(["PGACK"|content]) do
+    {:pgack, content}
+  end
+
+  defp get_type(content) do
+    {:unknown, content}
+  end
+
+
+
   defp split(sentence) do
     [main_raw, checksum] = String.split(sentence,"*",parts: 2)
     main = String.trim_leading(main_raw, "$")

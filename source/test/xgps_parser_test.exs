@@ -76,6 +76,24 @@ defmodule XGPSParserTest do
     assert expected_content == content
   end
 
+  test "unwrap type PGACK" do
+    body = "PGACK,33,1"
+    expected_type = :pgack
+    expected_content = ["33","1"]
+    {type, content} = XGPS.Parser.unwrap_type(body)
+    assert expected_type == type
+    assert expected_content == content
+  end
+
+  test "unwrap unknown type" do
+    body = "PGABC,33,1"
+    expected_type = :unknown
+    expected_content = ["PGABC","33","1"]
+    {type, content} = XGPS.Parser.unwrap_type(body)
+    assert expected_type == type
+    assert expected_content == content
+  end
+
   test "'CO' hex_string is 192" do
     hex_string = "C0"
     expected_int = 192
