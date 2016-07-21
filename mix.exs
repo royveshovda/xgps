@@ -26,6 +26,7 @@ defmodule XGPS.Mixfile do
   defp description do
     """
     A GPS library written in Elixir.
+    Will attach to an serial port, and provide positions to subscribers.
     """
   end
 
