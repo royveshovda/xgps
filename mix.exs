@@ -9,7 +9,9 @@ defmodule XGPS.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      source_url: "https://github.com/rveshovda/xgps",
-     deps: deps()]
+     deps: deps(),
+     description: description(),
+     package: package()]
   end
 
   def application do
@@ -19,5 +21,20 @@ defmodule XGPS.Mixfile do
 
   defp deps do
     [{:nerves_uart, "~> 0.0.7"}]
+  end
+
+  defp description do
+    """
+    A GPS library written in Elixir.
+    """
+  end
+
+  defp package do
+    [# These are the default files included in the package
+     name: :xgps,
+     files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+     maintainers: ["Roy Veshovda"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/rveshovda/xgps"}]
   end
 end
