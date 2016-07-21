@@ -2,11 +2,14 @@ defmodule XGPS.Parser do
   require Bitwise
 
   def parse_sentence(sentence) do
-    {:ok, body} = unwrap_sentence(sentence)
-    {type, content} = unwrap_type(body)
-    # TODO: Parse more
-
-    {type, content}
+    case unwrap_sentence(sentence) do
+      {:ok, body} ->
+        {type, content} = unwrap_type(body)
+        # TODO: Parse more
+        {type, content}
+      {:error, :checksum} ->
+        {:error, :checksum}
+    end
   end
 
   def unwrap_sentence(sentence) do
