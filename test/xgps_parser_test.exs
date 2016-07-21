@@ -1,6 +1,186 @@
 defmodule XGPSParserTest do
   use ExUnit.Case
 
+  # VTG: OK
+  # RMC: ?
+  # GGA: ?
+  # GSV: OK
+  # GSA: OK
+  # PGTOP: OK
+  # PGACK: OK
+
+  test "parse sentence RMC" do
+    sentence = "$GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A*55"
+    expected = %XGPS.Messages.RMC{
+                  time: "144728.000",
+                  status: "A",
+                  latitude: "5441.3992,N",
+                  longitude: "02515.6704,E",
+                  speed_over_groud: 1.37,
+                  track_angle: 38.57,
+                  date: "190716",
+                  magnetic_variation: nil,
+                  unknown: nil,
+                  autonomous: "A"
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence RMC - wrong content length" do
+    sentence = "$GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,A*55"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GGA" do
+    sentence = "$GPGGA,144729.000,5441.3996,N,02515.6709,E,1,05,2.20,118.7,M,27.6,M,,*62"
+    expected = %XGPS.Messages.GGA{
+                  fix_taken: "144729.000",
+                  latitude: "5441.3996,N",
+                  longitude: "02515.6709,E",
+                  fix_quality: 1,
+                  number_of_satelites_tracked: 5,
+                  horizontal_dilution: 2.20,
+                  altitude: {118.7, :meter},
+                  height_over_goeid: {27.6, :meter},
+                  unknown_1: nil,
+                  unknown_2: nil
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GGA - wrong content length" do
+    sentence = "$GPGGA,144729.000,5441.3996,N,02515.6709,E,1,05,2.20,118.7,M,27.6,M*62"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence PGTOP" do
+    sentence = "$PGTOP,11,2*6E"
+    expected = %XGPS.Messages.PGTOP{
+                  unknown_number: 11,
+                  antenna_type: 2
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence PGTOP - wrong content length" do
+    sentence = "$PGTOP,11,2,,*6E"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence PGACK" do
+    sentence = "$PGACK,33,1*6F"
+    expected = %XGPS.Messages.PGACK{
+                  request1: "33",
+                  request2: "1"
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence PGACK - wrong content length" do
+    sentence = "$PGACK,33,1,,*6F"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence VTG" do
+    sentence = "$GPVTG,38.57,T,,M,1.37,N,2.53,K,A*05"
+    expected = %XGPS.Messages.VTG{
+                  true_track_made_good: 38.57,
+                  magnetic_track_made_good: nil,
+                  ground_speed_in_knots: 1.37,
+                  ground_speed_in_km_h: 2.53,
+                  autonomous: "A"
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence VTG - wrong content length" do
+    sentence = "$GPVTG,38.57,T,,M,1.37,N,2.53,K,A,,*05"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GSA" do
+    sentence = "$GPGSA,A,3,21,26,18,10,16,,,,,,,,2.41,2.20,0.99*0D"
+    expected = %XGPS.Messages.GSA{
+                  selection: "A",
+                  fix_3d: 3,
+                  prn_1_for_fix: 21,
+                  prn_2_for_fix: 26,
+                  prn_3_for_fix: 18,
+                  prn_4_for_fix: 10,
+                  prn_5_for_fix: 16,
+                  prn_6_for_fix: nil,
+                  prn_7_for_fix: nil,
+                  prn_8_for_fix: nil,
+                  prn_9_for_fix: nil,
+                  prn_10_for_fix: nil,
+                  prn_11_for_fix: nil,
+                  prn_12_for_fix: nil,
+                  pdop: 2.41,
+                  hdop: 2.20,
+                  vdop: 0.99
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GSA - wrong content length" do
+    sentence = "$GPGSA,A,3,21,26,18,10,16,,,,,,,,2.41,2.20,0.99,,*0D"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GSV" do
+    sentence = "$GPGSV,3,2,12,10,40,181,22,26,32,206,25,20,27,053,,15,22,069,*7A"
+    expected = %XGPS.Messages.GSV{
+                  number_of_sences: 3,
+                  sentence_number: 2,
+                  number_of_satelites_in_view: 12,
+                  satelite_prn_number: 10,
+                  elevation_degrees: 40,
+                  azimuth_degrees: 181,
+                  sat_1_snr: 22,
+                  sat_2_snr: 26,
+                  sat_3_snr: 32,
+                  sat_4_snr: 206,
+                  sat_5_snr: 25,
+                  sat_6_snr: 20,
+                  sat_7_snr: 27,
+                  sat_8_snr: 53,
+                  sat_9_snr: nil,
+                  sat_10_snr: 15,
+                  sat_11_snr: 22,
+                  sat_12_snr: 69,
+                  autonomous: nil
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence GSV - wrong content length" do
+    sentence = "$GPGSV,3,2,12,10,40,181,22,26,32,206,25,20,27,053,,15,22,069,,,*7A"
+    expected = {:unknown, :unknown_content_length}
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+
+
   test "unwrap sentence - OK - 1" do
     sentence = "$GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A*55"
     expected = "GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A"
