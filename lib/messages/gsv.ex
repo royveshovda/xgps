@@ -1,3 +1,3 @@
-defmodule XGPS.Messages.gsv do
-  
+defmodule XGPS.Messages.GSV do
+
 end
