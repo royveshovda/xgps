@@ -21,11 +21,48 @@ defmodule XGPS.Parser do
     end
   end
 
+  def unwrap_type(body) do
+    parts = String.split(body, ",")
+    get_type(parts)
+  end
+
+  defp split(sentence) do
+    [main_raw, checksum] = String.split(sentence,"*",parts: 2)
+    main = String.trim_leading(main_raw, "$")
+    {main, checksum}
+  end
+
+  defp calculate_checksum text do
+    Enum.reduce(String.codepoints(text), 0, &xor/2)
+  end
+
+  defp xor(x, acc) do
+    <<val::utf8>> = x
+    Bitwise.bxor(acc, val)
+  end
+
+  def hex_string_to_int(string) do
+    string |> Base.decode16! |> :binary.decode_unsigned
+  end
+
+  def int_to_hex_string(int) do
+    int |> :binary.encode_unsigned |> Base.encode16
+  end
+
+  defp get_type(["GPRMC"|content]), do: {:rmc, content}
+  defp get_type(["GPGGA"|content]), do: {:gga, content}
+  defp get_type(["GPGSV"|content]), do: {:gsv, content}
+  defp get_type(["GPGSA"|content]), do: {:gsa, content}
+  defp get_type(["GPVTG"|content]), do: {:vtg, content}
+  defp get_type(["PGTOP"|content]), do: {:pgtop, content}
+  defp get_type(["PGACK"|content]), do: {:pgack, content}
+  defp get_type(content), do: {:unknown, content}
+
   defp parse_content({:rmc, content}) do
     case length(content) do
       12 ->
         %XGPS.Messages.RMC{
-          time: Enum.at(content, 0),
+          time: parse_time(Enum.at(content, 0)),
           status: Enum.at(content, 1) |> parse_string,
           latitude: Enum.at(content, 2)<>","<>Enum.at(content, 3),
           longitude: Enum.at(content, 4)<>","<>Enum.at(content, 5),
@@ -44,7 +81,7 @@ defmodule XGPS.Parser do
     case length(content) do
       14 ->
         %XGPS.Messages.GGA{
-          fix_taken: Enum.at(content, 0),
+          fix_taken: parse_time(Enum.at(content, 0)),
           latitude: Enum.at(content, 1)<>","<>Enum.at(content, 2),
           longitude: Enum.at(content, 3)<>","<>Enum.at(content, 4),
           fix_quality: parse_int(Enum.at(content, 5)),
@@ -149,92 +186,40 @@ defmodule XGPS.Parser do
     end
   end
 
-  defp parse_float("") do
-    nil
-  end
-
+  defp parse_float(""), do: nil
   defp parse_float(value) do
     {float, _} = Float.parse(value)
     float
   end
 
-  defp parse_int("") do
-    nil
-  end
-
+  defp parse_int(""), do: nil
   defp parse_int(value) do
     {integer, _} = Integer.parse(value)
     integer
   end
 
-  defp parse_metric("M") do
-    :meter
-  end
-
-  defp parse_metric(_) do
-    :unknown
-  end
+  defp parse_metric("M"), do: :meter
+  defp parse_metric(_), do: :unknown
 
   defp parse_string(""), do: nil
   defp parse_string(value), do: value
 
-  def unwrap_type(body) do
-    parts = String.split(body, ",")
-    get_type(parts)
+  defp parse_time(time) when length(time) < 6, do: nil
+  defp parse_time(time) do
+    parts = String.split(time, ".")
+    parse_hours_minutes_seconds_ms(parts)
   end
 
-  defp get_type(["GPRMC"|content]) do
-    {:rmc, content}
-  end
-
-  defp get_type(["GPGGA"|content]) do
-    {:gga, content}
-  end
-
-  defp get_type(["GPGSV"|content]) do
-    {:gsv, content}
-  end
-
-  defp get_type(["GPGSA"|content]) do
-    {:gsa, content}
-  end
-
-  defp get_type(["GPVTG"|content]) do
-    {:vtg, content}
-  end
-
-  defp get_type(["PGTOP"|content]) do
-    {:pgtop, content}
-  end
-
-  defp get_type(["PGACK"|content]) do
-    {:pgack, content}
-  end
-
-  defp get_type(content) do
-    {:unknown, content}
-  end
-
-  defp split(sentence) do
-    [main_raw, checksum] = String.split(sentence,"*",parts: 2)
-    main = String.trim_leading(main_raw, "$")
-    {main, checksum}
-  end
-
-  defp calculate_checksum text do
-    Enum.reduce(String.codepoints(text), 0, &xor/2)
-  end
-
-  defp xor(x, acc) do
-    <<val::utf8>> = x
-    Bitwise.bxor(acc, val)
-  end
-
-  def hex_string_to_int(string) do
-    string |> Base.decode16! |> :binary.decode_unsigned
-  end
-
-  def int_to_hex_string(int) do
-    int |> :binary.encode_unsigned |> Base.encode16
+  defp parse_hours_minutes_seconds_ms([main]) when length(main) != 6, do: :unknown_format
+  defp parse_hours_minutes_seconds_ms([main, _millis]) when length(main) != 6, do: :unknown_format
+  defp parse_hours_minutes_seconds_ms([main, ""]), do: parse_hours_minutes_seconds_ms([main,"0"])
+  defp parse_hours_minutes_seconds_ms([main]), do: parse_hours_minutes_seconds_ms([main,"0"])
+  defp parse_hours_minutes_seconds_ms([main, millis]) do
+    {ms,_} = Integer.parse(millis)
+    {h,_} = Integer.parse(String.slice(main, 0, 2))
+    {m,_} = Integer.parse(String.slice(main, 2, 2))
+    {s,_} = Integer.parse(String.slice(main, 4, 2))
+    {:ok, time} = Time.new(h,m,s,ms)
+    time
   end
 end

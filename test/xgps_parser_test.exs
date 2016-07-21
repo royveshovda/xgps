@@ -11,8 +11,9 @@ defmodule XGPSParserTest do
 
   test "parse sentence RMC" do
     sentence = "$GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A*55"
+    {:ok, time} = Time.new(14,47,28,000)
     expected = %XGPS.Messages.RMC{
-                  time: "144728.000",
+                  time: time,
                   status: "A",
                   latitude: "5441.3992,N",
                   longitude: "02515.6704,E",
@@ -36,8 +37,9 @@ defmodule XGPSParserTest do
 
   test "parse sentence GGA" do
     sentence = "$GPGGA,144729.000,5441.3996,N,02515.6709,E,1,05,2.20,118.7,M,27.6,M,,*62"
+    {:ok, time} = Time.new(14,47,29,000)
     expected = %XGPS.Messages.GGA{
-                  fix_taken: "144729.000",
+                  fix_taken: time,
                   latitude: "5441.3996,N",
                   longitude: "02515.6709,E",
                   fix_quality: 1,
