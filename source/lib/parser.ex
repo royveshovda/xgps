@@ -58,8 +58,6 @@ defmodule XGPS.Parser do
     {:unknown, content}
   end
 
-
-
   defp split(sentence) do
     [main_raw, checksum] = String.split(sentence,"*",parts: 2)
     main = String.trim_leading(main_raw, "$")
@@ -82,8 +80,4 @@ defmodule XGPS.Parser do
   def int_to_hex_string(int) do
     int |> :binary.encode_unsigned |> Base.encode16
   end
-
-
-
-
 end

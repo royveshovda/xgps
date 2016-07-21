@@ -1,2 +1,0 @@
-# xgps
-GPS for Elixir
