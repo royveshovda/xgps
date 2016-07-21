@@ -34,6 +34,10 @@ defmodule XGPS.Reader do
     {:ok, %{pid: pid, port_name: port_name, data: ""}}
   end
 
+  def handle_info({:nerves_uart, port_name, "$"}, %{pid: pid, port_name: port_name, data: ""}) do
+    {:noreply, %{pid: pid, port_name: port_name, data: ""}}
+  end
+
   def handle_info({:nerves_uart, port_name, "$"}, %{pid: pid, port_name: port_name, data: data}) do
     sentence = String.strip(("$" <> data))
     # TODO: send to subscribers
