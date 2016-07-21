@@ -68,7 +68,7 @@ defmodule XGPS.Parser do
           longitude: Enum.at(content, 4)<>","<>Enum.at(content, 5),
           speed_over_groud: parse_float(Enum.at(content, 6)),
           track_angle: parse_float(Enum.at(content, 7)),
-          date: Enum.at(content, 8),
+          date: Enum.at(content, 8) |> parse_date,
           magnetic_variation: parse_float(Enum.at(content, 9)),
           unknown: Enum.at(content, 10) |> parse_string,
           autonomous: Enum.at(content, 11) |> parse_string
@@ -221,5 +221,14 @@ defmodule XGPS.Parser do
     {s,_} = Integer.parse(String.slice(main, 4, 2))
     {:ok, time} = Time.new(h,m,s,ms)
     time
+  end
+
+  defp parse_date(date_raw) when length(date_raw) != 6, do: :unknown_format
+  defp parse_date(date_raw) do
+    {day,_} = String.slice(date_raw,0,2) |> Integer.parse
+    {month,_} = String.slice(date_raw,2,2) |> Integer.parse
+    {year,_} = ("20" <> String.slice(date_raw, 4, 2)) |> Integer.parse
+    {:ok, date} = Date.new(year, month, day)
+    date
   end
 end

@@ -12,6 +12,7 @@ defmodule XGPSParserTest do
   test "parse sentence RMC" do
     sentence = "$GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A*55"
     {:ok, time} = Time.new(14,47,28,000)
+    {:ok, date} = Date.new(2016,7,19)
     expected = %XGPS.Messages.RMC{
                   time: time,
                   status: "A",
@@ -19,7 +20,7 @@ defmodule XGPSParserTest do
                   longitude: "02515.6704,E",
                   speed_over_groud: 1.37,
                   track_angle: 38.57,
-                  date: "190716",
+                  date: date,
                   magnetic_variation: nil,
                   unknown: nil,
                   autonomous: "A"
