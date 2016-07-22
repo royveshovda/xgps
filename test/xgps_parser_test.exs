@@ -1,14 +1,6 @@
 defmodule XGPSParserTest do
   use ExUnit.Case
 
-  # VTG: OK
-  # RMC: ?
-  # GGA: ?
-  # GSV: OK
-  # GSA: OK
-  # PGTOP: OK
-  # PGACK: OK
-
   test "parse sentence RMC" do
     sentence = "$GPRMC,144728.000,A,5441.1600,N,02515.6000,E,1.37,38.57,190716,,,A*50"
     {:ok, time} = Time.new(14,47,28,000)
