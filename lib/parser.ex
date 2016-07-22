@@ -64,8 +64,8 @@ defmodule XGPS.Parser do
         %XGPS.Messages.RMC{
           time: parse_time(Enum.at(content, 0)),
           status: Enum.at(content, 1) |> parse_string,
-          latitude: Enum.at(content, 2)<>","<>Enum.at(content, 3),
-          longitude: Enum.at(content, 4)<>","<>Enum.at(content, 5),
+          latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
+          longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
           speed_over_groud: parse_float(Enum.at(content, 6)),
           track_angle: parse_float(Enum.at(content, 7)),
           date: Enum.at(content, 8) |> parse_date,
@@ -82,8 +82,8 @@ defmodule XGPS.Parser do
       14 ->
         %XGPS.Messages.GGA{
           fix_taken: parse_time(Enum.at(content, 0)),
-          latitude: Enum.at(content, 1)<>","<>Enum.at(content, 2),
-          longitude: Enum.at(content, 3)<>","<>Enum.at(content, 4),
+          latitude: parse_latitude(Enum.at(content, 1),Enum.at(content, 2)),
+          longitude: parse_longitude(Enum.at(content, 3),Enum.at(content, 4)),
           fix_quality: parse_int(Enum.at(content, 5)),
           number_of_satelites_tracked: parse_int(Enum.at(content, 6)),
           horizontal_dilution: parse_float(Enum.at(content, 7)),
@@ -234,5 +234,37 @@ defmodule XGPS.Parser do
     {year,_} = ("20" <> String.slice(date_raw, 4, 2)) |> Integer.parse
     {:ok, date} = Date.new(year, month, day)
     date
+  end
+
+  defp parse_latitude(string, "N") do
+    value = parse_latitude_degrees(string)
+    value
+  end
+
+  defp parse_latitude(string, "S") do
+    value = parse_latitude_degrees(string)
+    value * (-1)
+  end
+
+  defp parse_latitude_degrees(string) do
+    {deg, _} = String.slice(string,0,2) |> Float.parse
+    {min, _} = String.slice(string,2,100) |> Float.parse
+    deg + (min/60.0)
+  end
+
+  defp parse_longitude(string, "E") do
+    value = parse_longitude_degrees(string)
+    value
+  end
+
+  defp parse_longitude(string, "W") do
+    value = parse_longitude_degrees(string)
+    value * (-1)
+  end
+
+  defp parse_longitude_degrees(string) do
+    {deg, _} = String.slice(string,0,3) |> Float.parse
+    {min, _} = String.slice(string,3,100) |> Float.parse
+    deg + (min/60.0)
   end
 end
