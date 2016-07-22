@@ -186,6 +186,10 @@ defmodule XGPS.Parser do
     end
   end
 
+  defp parse_content({:unknown, content}) do
+    {:unknown, content}
+  end
+
   defp parse_float(""), do: nil
   defp parse_float(value) do
     {float, _} = Float.parse(value)
