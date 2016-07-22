@@ -92,16 +92,9 @@ defmodule XGPS.Reader do
       magvariation: nil,
       hdop: nil,
       fix_quality: nil,
-      satelites: nil,
+      satelites: nil
     ]
   end
-
-  #uint8_t hour, minute, seconds, year, month, day;
-  #uint16_t milliseconds;
-  #float latitude, longitude;
-  #float geoidheight, altitude;
-  #float speed, angle, magvariation, HDOP;
-  #uint8_t fixquality, satellites;
 
   def init(port_name) do
     {:ok, pid} = Nerves.UART.start_link
@@ -119,12 +112,17 @@ defmodule XGPS.Reader do
 
   def handle_info({:nerves_uart, _port_name, "$"}, state) do
     sentence = String.strip(("$" <> state.data_buffer))
-    # TODO: send to subscribers
-    IO.puts(sentence)
-    IO.inspect XGPS.Parser.parse_sentence(sentence)
 
-    # TODO: Update state based on parse result
-    {:noreply, %{state | data_buffer: ""}}
+    # TODO: Remove after debugging
+    IO.puts sentence
+    parsed_data = XGPS.Parser.parse_sentence(sentence)
+
+    {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
+    send_update_event({updated, new_gps_data})
+
+    # TODO: Remove after debugging
+    IO.inspect new_gps_data
+    {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
   end
 
   def handle_info({:nerves_uart, _port_name, data}, state) do
@@ -144,5 +142,49 @@ defmodule XGPS.Reader do
   def terminate(_reason, state) do
     Nerves.UART.close(state.pid)
     Nerves.UART.stop(state.pid)
+  end
+
+  defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
+    speed = knots_to_kmh(rmc.speed_over_groud)
+    new_gps_data = %{gps_data | time: rmc.time,
+                                date: rmc.date,
+                                latitude: rmc.latitude,
+                                longitude: rmc.longitude,
+                                angle: rmc.track_angle,
+                                magvariation: rmc.magnetic_variation,
+                                speed: speed}
+    {:updated, new_gps_data}
+  end
+
+  defp update_gps_data(%XGPS.Messages.GGA{fix_quality: 0}, gps_data) do
+    new_gps_data = %{gps_data | has_fix: false}
+    {:updated, new_gps_data}
+  end
+
+  defp update_gps_data(%XGPS.Messages.GGA{} = gga, gps_data) do
+    new_gps_data = %{gps_data | has_fix: true,
+                                fix_quality: gga.fix_quality,
+                                satelites: gga.number_of_satelites_tracked,
+                                hdop: gga.horizontal_dilution,
+                                altitude: gga.altitude,
+                                geoidheight: gga.height_over_goeid,
+                                latitude: gga.latitude,
+                                longitude: gga.longitude}
+    {:updated, new_gps_data}
+  end
+
+  defp update_gps_data(_message, gps_data) do
+    {:not_updated, gps_data}
+  end
+
+  defp knots_to_kmh(speed_in_knots) when is_float(speed_in_knots) do
+    speed_in_knots * 1.852
+  end
+  defp knots_to_kmh(_speed_in_knots), do: 0
+
+  defp send_update_event({:not_updated, _gps_data}), do: :ok
+  defp send_update_event({:updated, _gps_data}) do
+    # TODO: Push updates using GenEvent
+    :ok
   end
 end
