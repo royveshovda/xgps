@@ -77,6 +77,21 @@ defmodule XGPS.Reader do
     send_command(cmd)
   end
 
+  def command_sbas_integrity_mode do
+    cmd = "$PMTK319,1*24"
+    send_command(cmd)
+  end
+
+  def command_sbas_enable_as_dpgs_source do
+    cmd = "$PMTK301,2*2E"
+    send_command(cmd)
+  end
+
+  def command_aic_enable do
+    cmd = "$PMTK286,1*23"
+    send_command(cmd)
+  end
+
   defp send_command(command) do
     pid = Process.whereis(__MODULE__)
     GenServer.cast(pid, {:command, command})
