@@ -10,7 +10,7 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-     config :xgps, port_to_start: {"/dev/serial0", :init_adafruit_gps}
+#     config :xgps, port_to_start: {"/dev/serial0", :init_adafruit_gps}
 #
 # And access this configuration in your application as:
 #

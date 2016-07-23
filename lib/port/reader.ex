@@ -6,8 +6,7 @@ defmodule XGPS.Port.Reader do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def get_gps_data do
-    pid = Process.whereis(__MODULE__)
+  def get_gps_data(pid) do
     GenServer.call(pid, :get_gps)
   end
 
