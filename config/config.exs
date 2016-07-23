@@ -10,15 +10,15 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :xgps, key: :value
+     config :xgps, port_to_start: {"/dev/serial0", :init_adafruit_gps}
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:xgps, :key)
+#     Application.get_env(:xgps, :port_to_start)
 #
 # Or configure a 3rd-party app:
 #
-#     config :logger, level: :info
+     config :logger, level: :info
 #
 
 # It is also possible to import configuration files, relative to this

@@ -14,6 +14,11 @@ defmodule XGPS.Ports_supervisor do
     Supervisor.start_child(__MODULE__, [{port_name, :init_adafruit_gps}])
   end
 
+  def start_port_on_startup(args) do
+    pid = Process.whereis(__MODULE__)
+    Supervisor.start_child(pid, [args])
+  end
+
   # Only for debugging
   def serial0_start() do
     start_port_with_adafruit_init("/dev/serial0")
