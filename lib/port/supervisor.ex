@@ -1,7 +1,7 @@
 defmodule XGPS.Port.Supervisor do
   use Supervisor
-  
-  def start_link(port_name) do
+
+  def start_link([port_name]) do
     name = to_string(__MODULE__) <> ": " <> port_name
     Supervisor.start_link(__MODULE__, [port_name], name: name)
   end
