@@ -52,44 +52,27 @@ defmodule XGPS.Reader do
     send_command(cmd)
   end
 
-  def command_antenna_on do
+  def command_send_antenna_on do
     cmd = "$PGCMD,33,1*6C"
     send_command(cmd)
   end
 
-  def command_antenna_off do
+  def command_send_antenna_off do
     cmd = "$PGCMD,33,0*6D"
     send_command(cmd)
   end
 
-  def command_sbas_enable do
-    cmd = "$PMTK313,1*2E"
-    send_command(cmd)
-  end
-
-  def command_sbas_disable do
-    cmd = "$PMTK313,0*2F"
-    send_command(cmd)
-  end
-
-  def command_sbas_query do
-    cmd = "$PMTK413*34"
-    send_command(cmd)
-  end
-
-  def command_sbas_integrity_mode do
-    cmd = "$PMTK319,1*24"
-    send_command(cmd)
-  end
-
-  def command_sbas_enable_as_dpgs_source do
-    cmd = "$PMTK301,2*2E"
-    send_command(cmd)
-  end
-
-  def command_aic_enable do
-    cmd = "$PMTK286,1*23"
-    send_command(cmd)
+  def command_init_adafruit do
+    cmd1 = "$PMTK313,1*2E" # enable SBAS
+    cmd2 = "$PMTK319,1*24" # Set SBAS to not test mode
+    cmd3 = "$PMTK301,2*2E" # Enable SBAS to be used for DGPS
+    cmd4 = "$PMTK286,1*23" # Enable AIC (anti-inteference)
+    cmd5 = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29" # Output only RMC & GGA
+    send_command(cmd1)
+    send_command(cmd2)
+    send_command(cmd3)
+    send_command(cmd4)
+    send_command(cmd5)
   end
 
   defp send_command(command) do
