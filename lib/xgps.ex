@@ -6,16 +6,14 @@ defmodule XGPS do
 
     children = [
       supervisor(XGPS.Ports_supervisor, []),
-      worker(XGPS.Publisher, [])
+      XGPS.EventManager.child_spec,
       #worker(XGPS.Parser, [])
     ]
 
     opts = [strategy: :one_for_one, name: XGPS.Supervisor]
-    pid_sup = Supervisor.start_link(children, opts)
 
-    #args = Application.get_env(:xgps, :port_to_start)
-    #XGPS.Ports_supervisor.start_port_on_startup(args) 
-
-    pid_sup
+    with {:ok, pid} <- Supervisor.start_link(children, opts),
+          :ok <- XGPS.EventHandler.register_with_manager,
+    do: {:ok, pid}
   end
 end

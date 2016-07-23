@@ -146,7 +146,7 @@ defmodule XGPS.Port.Reader do
   defp send_update_event({:not_updated, _gps_data}), do: :ok
   defp send_update_event({:updated, gps_data}) do
     Logger.debug(fn -> "New gps_data: : " <> inspect(gps_data) end)
-    # TODO: Push updates using GenEvent
+    XGPS.EventManager.update(gps_data)
     :ok
   end
 end
