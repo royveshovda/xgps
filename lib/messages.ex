@@ -1,4 +1,4 @@
-defmodule XGPS.Port.Messages.GSV do
+defmodule XGPS.Messages.GSV do
   # Example:
   # $GPGSV,3,2,12,10,40,181,22,26,32,206,25,20,27,053,,15,22,069,*7A
   #    GSV          Satellites in view
@@ -34,7 +34,7 @@ defmodule XGPS.Port.Messages.GSV do
             autonomous: nil
 end
 
-defmodule XGPS.Port.Messages.GSA do
+defmodule XGPS.Messages.GSA do
   # Example:
   # $GPGSA,A,3,21,26,18,10,16,,,,,,,,2.41,2.20,0.99*0D
   #   GSA      Satellite status
@@ -66,7 +66,7 @@ defmodule XGPS.Port.Messages.GSA do
             vdop: nil
 end
 
-defmodule XGPS.Port.Messages.RMC do
+defmodule XGPS.Messages.RMC do
   # Example:
   # $GPRMC,144728.000,A,5441.3992,N,02515.6704,E,1.37,38.57,190716,,,A*55
   #   RMC          Recommended Minimum sentence C
@@ -93,7 +93,7 @@ defmodule XGPS.Port.Messages.RMC do
             autonomous: nil
 end
 
-defmodule XGPS.Port.Messages.VTG do
+defmodule XGPS.Messages.VTG do
   # Example:
   # $GPVTG,38.57,T,,M,1.37,N,2.53,K,A*05
   #      VTG          Track made good and ground speed
@@ -110,7 +110,7 @@ defmodule XGPS.Port.Messages.VTG do
             autonomous: nil
 end
 
-defmodule XGPS.Port.Messages.GGA do
+defmodule XGPS.Messages.GGA do
   # Example:
   # $GPGGA,144729.000,5441.3996,N,02515.6709,E,1,05,2.20,118.7,M,27.6,M,,*62
   #   GGA          Global Positioning System Fix Data
@@ -146,7 +146,7 @@ defmodule XGPS.Port.Messages.GGA do
             unknown_2: nil
 end
 
-defmodule XGPS.Port.Messages.PGTOP do
+defmodule XGPS.Messages.PGTOP do
   # Example:
   # $PGTOP,11,2*6E
   #     PGTOP        Antenna status
@@ -159,7 +159,7 @@ defmodule XGPS.Port.Messages.PGTOP do
 end
 
 
-defmodule XGPS.Port.Messages.PGACK do
+defmodule XGPS.Messages.PGACK do
   # Example:
   # $PGACK,33,1*6F
   defstruct request1: nil, request2: nil

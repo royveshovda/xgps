@@ -2,34 +2,15 @@ defmodule XGPS.Port.Reader do
   use GenServer
   require Logger
 
-  # Only for debugging
-  def serial0() do
-    start_link_and_init_adafruit_gps("/dev/serial0")
-  end
-
-  def start_link(port_name) do
-    GenServer.start_link(__MODULE__, [port_name], name: __MODULE__)
+  def start_link([port_name]) do
+    name = to_string(__MODULE__) <> ": " <> port_name
+    GenServer.start_link(__MODULE__, [port_name], name: name)
   end
 
   # TODO: Figure out how opts work, to get this init-command from config
-  def start_link_and_init_adafruit_gps(port_name) do
-    GenServer.start_link(__MODULE__, [port_name, :init_adafruit_gps], name: __MODULE__)
-  end
-
-  def stop() do
-    stop(__MODULE__)
-  end
-
-  defp stop(name) do
-    pid = Process.whereis(name)
-    cond do
-      is_pid(pid) ->
-        if Process.alive?(pid) do
-          GenServer.call(pid, :stop)
-        end
-      true -> :ok
-    end
-    :ok
+  def start_link([port_name, :init_adafruit_gps]) do
+    name = to_string(__MODULE__) <> ": " <> port_name
+    GenServer.start_link(__MODULE__, [port_name, :init_adafruit_gps], name: name)
   end
 
   def get_gps_data do
@@ -103,7 +84,7 @@ defmodule XGPS.Port.Reader do
   def handle_info({:nerves_uart, _port_name, "\n"}, state) do
     sentence = String.strip((state.data_buffer))
     Logger.debug(fn -> "Received: " <> sentence end)
-    parsed_data = XGPS.Port.Parser.parse_sentence(sentence)
+    parsed_data = XGPS.Parser.parse_sentence(sentence)
     {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
     send_update_event({updated, new_gps_data})
     {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
@@ -132,7 +113,7 @@ defmodule XGPS.Port.Reader do
     Nerves.UART.stop(state.pid)
   end
 
-  defp update_gps_data(%XGPS.Port.Messages.RMC{} = rmc, gps_data) do
+  defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
     speed = knots_to_kmh(rmc.speed_over_groud)
     new_gps_data = %{gps_data | time: rmc.time,
                                 date: rmc.date,
@@ -144,12 +125,12 @@ defmodule XGPS.Port.Reader do
     {:updated, new_gps_data}
   end
 
-  defp update_gps_data(%XGPS.Port.Messages.GGA{fix_quality: 0}, gps_data) do
+  defp update_gps_data(%XGPS.Messages.GGA{fix_quality: 0}, gps_data) do
     new_gps_data = %{gps_data | has_fix: false}
     {:updated, new_gps_data}
   end
 
-  defp update_gps_data(%XGPS.Port.Messages.GGA{} = gga, gps_data) do
+  defp update_gps_data(%XGPS.Messages.GGA{} = gga, gps_data) do
     new_gps_data = %{gps_data | has_fix: true,
                                 fix_quality: gga.fix_quality,
                                 satelites: gga.number_of_satelites_tracked,
