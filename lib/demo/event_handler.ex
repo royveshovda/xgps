@@ -11,6 +11,6 @@ defmodule XGPS.Demo.EventHandler do
   end
 
   def unregister_with_manager do
-    XGPS.EventHandler.unregister(__MODULE__, nil)
+    XGPS.EventManager.unregister(__MODULE__, nil)
   end
 end
