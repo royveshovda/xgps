@@ -13,8 +13,8 @@ defmodule XGPS do
     opts = [strategy: :one_for_one, name: XGPS.Supervisor]
     pid_sup = Supervisor.start_link(children, opts)
 
-    args = Application.get_env(:xgps, :port_to_start)
-    XGPS.Ports_supervisor.start_port_on_startup(args) 
+    #args = Application.get_env(:xgps, :port_to_start)
+    #XGPS.Ports_supervisor.start_port_on_startup(args) 
 
     pid_sup
   end
