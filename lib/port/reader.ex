@@ -2,15 +2,8 @@ defmodule XGPS.Port.Reader do
   use GenServer
   require Logger
 
-  def start_link([port_name]) do
-    name = to_string(__MODULE__) <> ": " <> port_name
-    GenServer.start_link(__MODULE__, [port_name], name: name)
-  end
-
-  # TODO: Figure out how opts work, to get this init-command from config
-  def start_link([port_name, :init_adafruit_gps]) do
-    name = to_string(__MODULE__) <> ": " <> port_name
-    GenServer.start_link(__MODULE__, [port_name, :init_adafruit_gps], name: name)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args)
   end
 
   def get_gps_data do
@@ -45,7 +38,7 @@ defmodule XGPS.Port.Reader do
     ]
   end
 
-  def init([port_name, :init_adafruit_gps]) do
+  def init({port_name, :init_adafruit_gps}) do
     {:ok, uart_pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %Gpsdata{has_fix: false}
@@ -54,11 +47,11 @@ defmodule XGPS.Port.Reader do
     {:ok, state}
   end
 
-  def init([port_name]) do
-    {:ok, pid} = Nerves.UART.start_link
-    :ok = Nerves.UART.open(pid, port_name, speed: 9600, active: true)
+  def init({port_name}) do
+    {:ok, uart_pid} = Nerves.UART.start_link
+    :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %Gpsdata{has_fix: false}
-    state = %State{gps_data: gps_data, pid: pid, port_name: port_name, data_buffer: ""}
+    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
     {:ok, state}
   end
 

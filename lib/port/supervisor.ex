@@ -1,15 +1,14 @@
 defmodule XGPS.Port.Supervisor do
   use Supervisor
 
-  def start_link([port_name]) do
-    name = to_string(__MODULE__) <> ": " <> port_name
-    Supervisor.start_link(__MODULE__, [port_name], name: name)
+  def start_link(args) do
+    Supervisor.start_link(__MODULE__, args)
   end
 
-  def init([port_name]) do
+  def init(args) do
     children = [
-      worker(XGPS.Port.Reader, [port_name], restart: :transient),
+      worker(XGPS.Port.Reader, [args], restart: :transient)
     ]
-    supervise(children, strategy: :one_for_one, max_restarts: 3, max_seconds: 5)
+    supervise(children, strategy: :one_for_one)
   end
 end
