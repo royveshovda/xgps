@@ -1,15 +1,20 @@
 defmodule XGPS.Reader do
   use GenServer
+  require Logger
 
   # Only for debugging
   def serial0() do
-    start_link("/dev/serial0")
+    start_link_and_init_adafruit_gps("/dev/serial0")
   end
 
   def start_link(port_name) do
-    GenServer.start_link(__MODULE__, port_name, name: __MODULE__)
+    GenServer.start_link(__MODULE__, [port_name], name: __MODULE__)
   end
 
+  # TODO: Figure out how opts work, to get this init-command from config
+  def start_link_and_init_adafruit_gps(port_name) do
+    GenServer.start_link(__MODULE__, [port_name, :init_adafruit_gps], name: __MODULE__)
+  end
 
   def stop() do
     stop(__MODULE__)
@@ -31,63 +36,6 @@ defmodule XGPS.Reader do
     pid = Process.whereis(__MODULE__)
     GenServer.call(pid, :get_gps)
   end
-
-  def command_output_off do
-    cmd = "$PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
-    send_command(cmd)
-  end
-
-  def command_output_all_data do
-    cmd = "$PMTK314,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
-    send_command(cmd)
-  end
-
-  def command_output_rmc_gga do
-    cmd = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
-    send_command(cmd)
-  end
-
-  def command_output_rmc_only do
-    cmd = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29"
-    send_command(cmd)
-  end
-
-  def command_ask_for_version do
-    cmd = "$PMTK605*31"
-    send_command(cmd)
-  end
-
-  def command_send_antenna_on do
-    cmd = "$PGCMD,33,1*6C"
-    send_command(cmd)
-  end
-
-  def command_send_antenna_off do
-    cmd = "$PGCMD,33,0*6D"
-    send_command(cmd)
-  end
-
-  def command_init_adafruit do
-    cmd1 = "$PMTK313,1*2E" # enable SBAS
-    cmd2 = "$PMTK319,1*24" # Set SBAS to not test mode
-    cmd3 = "$PMTK301,2*2E" # Enable SBAS to be used for DGPS
-    cmd4 = "$PMTK286,1*23" # Enable AIC (anti-inteference)
-    cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28" # Output only RMC & GGA
-    cmd6 = "$PMTK397,0*23" # Disable nav-speed threshold
-    send_command(cmd1)
-    send_command(cmd2)
-    send_command(cmd3)
-    send_command(cmd4)
-    send_command(cmd5)
-    send_command(cmd6)
-  end
-
-  defp send_command(command) do
-    pid = Process.whereis(__MODULE__)
-    GenServer.cast(pid, {:command, command})
-  end
-
-  ######
 
   defmodule State do
     defstruct [
@@ -116,7 +64,16 @@ defmodule XGPS.Reader do
     ]
   end
 
-  def init(port_name) do
+  def init([port_name, :init_adafruit_gps]) do
+    {:ok, uart_pid} = Nerves.UART.start_link
+    :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
+    gps_data = %Gpsdata{has_fix: false}
+    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
+    init_adafruit_gps(uart_pid)
+    {:ok, state}
+  end
+
+  def init([port_name]) do
     {:ok, pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(pid, port_name, speed: 9600, active: true)
     gps_data = %Gpsdata{has_fix: false}
@@ -124,7 +81,20 @@ defmodule XGPS.Reader do
     {:ok, state}
   end
 
-  # TODO: Use struct as state
+  defp init_adafruit_gps(uart_pid) do
+    cmd1 = "$PMTK313,1*2E\r\n" # enable SBAS
+    cmd2 = "$PMTK319,1*24\r\n" # Set SBAS to not test mode
+    cmd3 = "$PMTK301,2*2E\r\n" # Enable SBAS to be used for DGPS
+    cmd4 = "$PMTK286,1*23\r\n" # Enable AIC (anti-inteference)
+    cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n" # Output only RMC & GGA
+    cmd6 = "$PMTK397,0*23\r\n" # Disable nav-speed threshold
+    Nerves.UART.write(uart_pid, cmd1)
+    Nerves.UART.write(uart_pid, cmd2)
+    Nerves.UART.write(uart_pid, cmd3)
+    Nerves.UART.write(uart_pid, cmd4)
+    Nerves.UART.write(uart_pid, cmd5)
+    Nerves.UART.write(uart_pid, cmd6)
+  end
 
   def handle_info({:nerves_uart, _port_name, "\n"}, %State{data_buffer: ""} = state) do
     {:noreply, state}
@@ -132,19 +102,10 @@ defmodule XGPS.Reader do
 
   def handle_info({:nerves_uart, _port_name, "\n"}, state) do
     sentence = String.strip((state.data_buffer))
-
-    # TODO: Remove after debugging
-    # TODO: use logger
-    #IO.puts sentence
-
+    Logger.debug(fn -> "Received: " <> sentence end)
     parsed_data = XGPS.Parser.parse_sentence(sentence)
-
     {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
     send_update_event({updated, new_gps_data})
-
-    # TODO: Remove after debugging
-    # TODO: use logger
-    # IO.inspect new_gps_data
     {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
   end
 
@@ -210,7 +171,8 @@ defmodule XGPS.Reader do
   defp knots_to_kmh(_speed_in_knots), do: 0
 
   defp send_update_event({:not_updated, _gps_data}), do: :ok
-  defp send_update_event({:updated, _gps_data}) do
+  defp send_update_event({:updated, gps_data}) do
+    Logger.debug(fn -> "New gps_data: : " <> inspect(gps_data) end)
     # TODO: Push updates using GenEvent
     :ok
   end
