@@ -67,7 +67,7 @@ defmodule XGPS.Reader do
     cmd2 = "$PMTK319,1*24" # Set SBAS to not test mode
     cmd3 = "$PMTK301,2*2E" # Enable SBAS to be used for DGPS
     cmd4 = "$PMTK286,1*23" # Enable AIC (anti-inteference)
-    cmd5 = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29" # Output only RMC & GGA
+    cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28" # Output only RMC & GGA
     send_command(cmd1)
     send_command(cmd2)
     send_command(cmd3)
