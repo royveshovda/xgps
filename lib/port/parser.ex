@@ -1,4 +1,4 @@
-defmodule XGPS.Parser do
+defmodule XGPS.Port.Parser do
   require Bitwise
 
   def parse_sentence(sentence) do
@@ -61,7 +61,7 @@ defmodule XGPS.Parser do
   defp parse_content({:rmc, content}) do
     case length(content) do
       12 ->
-        %XGPS.Messages.RMC{
+        %XGPS.Port.Messages.RMC{
           time: parse_time(Enum.at(content, 0)),
           status: Enum.at(content, 1) |> parse_string,
           latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
@@ -80,7 +80,7 @@ defmodule XGPS.Parser do
   defp parse_content({:gga, content}) do
     case length(content) do
       14 ->
-        %XGPS.Messages.GGA{
+        %XGPS.Port.Messages.GGA{
           fix_taken: parse_time(Enum.at(content, 0)),
           latitude: parse_latitude(Enum.at(content, 1),Enum.at(content, 2)),
           longitude: parse_longitude(Enum.at(content, 3),Enum.at(content, 4)),
@@ -99,7 +99,7 @@ defmodule XGPS.Parser do
   defp parse_content({:gsv, content}) do
     case length(content) do
       19 ->
-        %XGPS.Messages.GSV{
+        %XGPS.Port.Messages.GSV{
           number_of_sences: parse_int(Enum.at(content, 0)),
           sentence_number: parse_int(Enum.at(content, 1)),
           number_of_satelites_in_view: parse_int(Enum.at(content, 2)),
@@ -127,7 +127,7 @@ defmodule XGPS.Parser do
   defp parse_content({:gsa, content}) do
     case length(content) do
       17 ->
-        %XGPS.Messages.GSA{
+        %XGPS.Port.Messages.GSA{
           selection: Enum.at(content,0) |> parse_string,
           fix_3d: parse_int(Enum.at(content,1)),
           prn_1_for_fix: parse_int(Enum.at(content,2)),
@@ -153,7 +153,7 @@ defmodule XGPS.Parser do
   defp parse_content({:vtg, content}) do
     case length(content) do
       9 ->
-        %XGPS.Messages.VTG{
+        %XGPS.Port.Messages.VTG{
           true_track_made_good: parse_float(Enum.at(content, 0)),
           magnetic_track_made_good: parse_float(Enum.at(content, 2)),
           ground_speed_in_knots: parse_float(Enum.at(content, 4)),
@@ -167,7 +167,7 @@ defmodule XGPS.Parser do
   defp parse_content({:pgtop, content}) do
     case length(content) do
       2 ->
-        %XGPS.Messages.PGTOP{
+        %XGPS.Port.Messages.PGTOP{
           unknown_number: parse_int(Enum.at(content, 0)),
           antenna_type: parse_int(Enum.at(content, 1))
         }
@@ -178,7 +178,7 @@ defmodule XGPS.Parser do
   defp parse_content({:pgack, content}) do
     case length(content) do
       2 ->
-        %XGPS.Messages.PGACK{
+        %XGPS.Port.Messages.PGACK{
           request1: Enum.at(content, 0) |> parse_string,
           request2: Enum.at(content, 1) |> parse_string
         }

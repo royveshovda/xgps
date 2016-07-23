@@ -1,4 +1,4 @@
-defmodule XGPS.Reader do
+defmodule XGPS.Port.Reader do
   use GenServer
   require Logger
 
@@ -103,7 +103,7 @@ defmodule XGPS.Reader do
   def handle_info({:nerves_uart, _port_name, "\n"}, state) do
     sentence = String.strip((state.data_buffer))
     Logger.debug(fn -> "Received: " <> sentence end)
-    parsed_data = XGPS.Parser.parse_sentence(sentence)
+    parsed_data = XGPS.Port.Parser.parse_sentence(sentence)
     {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
     send_update_event({updated, new_gps_data})
     {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
@@ -132,7 +132,7 @@ defmodule XGPS.Reader do
     Nerves.UART.stop(state.pid)
   end
 
-  defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
+  defp update_gps_data(%XGPS.Port.Messages.RMC{} = rmc, gps_data) do
     speed = knots_to_kmh(rmc.speed_over_groud)
     new_gps_data = %{gps_data | time: rmc.time,
                                 date: rmc.date,
@@ -144,12 +144,12 @@ defmodule XGPS.Reader do
     {:updated, new_gps_data}
   end
 
-  defp update_gps_data(%XGPS.Messages.GGA{fix_quality: 0}, gps_data) do
+  defp update_gps_data(%XGPS.Port.Messages.GGA{fix_quality: 0}, gps_data) do
     new_gps_data = %{gps_data | has_fix: false}
     {:updated, new_gps_data}
   end
 
-  defp update_gps_data(%XGPS.Messages.GGA{} = gga, gps_data) do
+  defp update_gps_data(%XGPS.Port.Messages.GGA{} = gga, gps_data) do
     new_gps_data = %{gps_data | has_fix: true,
                                 fix_quality: gga.fix_quality,
                                 satelites: gga.number_of_satelites_tracked,

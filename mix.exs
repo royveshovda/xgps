@@ -20,7 +20,8 @@ defmodule XGPS.Mixfile do
   end
 
   defp deps do
-    [{:nerves_uart, "~> 0.0.7"}]
+    [{:nerves_uart, "~> 0.0.7"},
+     {:mix_test_watch, "~> 0.2.6"}]
   end
 
   defp description do
