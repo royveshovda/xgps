@@ -9,4 +9,6 @@ defmodule XGPS.EventManager do
   def update(gps_data), do: GenEvent.notify(@name, {:gps, gps_data})
 
   def register(handler, args), do: GenEvent.add_handler(@name, handler, args)
+
+  def unregister(handler, args), do: GenEvent.remove_handler(@name, handler, args)
 end

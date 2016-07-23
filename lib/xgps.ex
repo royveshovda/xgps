@@ -11,9 +11,6 @@ defmodule XGPS do
     ]
 
     opts = [strategy: :one_for_one, name: XGPS.Supervisor]
-
-    with {:ok, pid} <- Supervisor.start_link(children, opts),
-          :ok <- XGPS.EventHandler.register_with_manager,
-    do: {:ok, pid}
+    Supervisor.start_link(children, opts)
   end
 end
