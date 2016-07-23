@@ -121,12 +121,12 @@ defmodule XGPS.Reader do
 
   # TODO: Use struct as state
 
-  def handle_info({:nerves_uart, _port_name, "$"}, %State{data_buffer: ""} = state) do
+  def handle_info({:nerves_uart, _port_name, "\n"}, %State{data_buffer: ""} = state) do
     {:noreply, state}
   end
 
-  def handle_info({:nerves_uart, _port_name, "$"}, state) do
-    sentence = String.strip(("$" <> state.data_buffer))
+  def handle_info({:nerves_uart, _port_name, "\n"}, state) do
+    sentence = String.strip((state.data_buffer))
 
     # TODO: Remove after debugging
     IO.puts sentence
