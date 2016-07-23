@@ -68,11 +68,13 @@ defmodule XGPS.Reader do
     cmd3 = "$PMTK301,2*2E" # Enable SBAS to be used for DGPS
     cmd4 = "$PMTK286,1*23" # Enable AIC (anti-inteference)
     cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28" # Output only RMC & GGA
+    cmd6 = "$PMTK397,0*23" # Disable nav-speed threshold
     send_command(cmd1)
     send_command(cmd2)
     send_command(cmd3)
     send_command(cmd4)
     send_command(cmd5)
+    send_command(cmd6)
   end
 
   defp send_command(command) do
