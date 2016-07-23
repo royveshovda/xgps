@@ -236,6 +236,8 @@ defmodule XGPS.Parser do
     date
   end
 
+  defp parse_latitude("", ""), do: nil
+
   defp parse_latitude(string, "N") do
     value = parse_latitude_degrees(string)
     value
@@ -251,6 +253,8 @@ defmodule XGPS.Parser do
     {min, _} = String.slice(string,2,100) |> Float.parse
     deg + (min/60.0)
   end
+
+  defp parse_longitude("", ""), do: nil
 
   defp parse_longitude(string, "E") do
     value = parse_longitude_degrees(string)

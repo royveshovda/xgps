@@ -1,6 +1,25 @@
 defmodule XGPSParserTest do
   use ExUnit.Case
 
+  test "parse sentence GGA - no fix" do
+    sentence = "$GPGGA,042940.000,,,,,0,05,,,M,,M,,*76"
+    {:ok, time} = Time.new(4,29,40,000)
+    expected = %XGPS.Messages.GGA{
+                  fix_taken: time,
+                  latitude: nil,
+                  longitude: nil,
+                  fix_quality: 0,
+                  number_of_satelites_tracked: 5,
+                  horizontal_dilution: nil,
+                  altitude: {nil, :meter},
+                  height_over_goeid: {nil, :meter},
+                  unknown_1: nil,
+                  unknown_2: nil
+                }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
   test "parse sentence RMC" do
     sentence = "$GPRMC,144728.000,A,5441.1600,N,02515.6000,E,1.37,38.57,190716,,,A*50"
     {:ok, time} = Time.new(14,47,28,000)
