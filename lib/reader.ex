@@ -27,6 +27,11 @@ defmodule XGPS.Reader do
     :ok
   end
 
+  def get_gps_data do
+    pid = Process.whereis(__MODULE__)
+    GenServer.call(pid, :get_gps)
+  end
+
   def command_output_off do
     cmd = "$PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
     send_command(cmd)
@@ -93,7 +98,7 @@ defmodule XGPS.Reader do
     ]
   end
 
-  defmodule Gps_state do
+  defmodule Gpsdata do
     defstruct [
       has_fix: false,
       time: nil,
@@ -114,7 +119,7 @@ defmodule XGPS.Reader do
   def init(port_name) do
     {:ok, pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(pid, port_name, speed: 9600, active: true)
-    gps_data = %Gps_state{has_fix: false}
+    gps_data = %Gpsdata{has_fix: false}
     state = %State{gps_data: gps_data, pid: pid, port_name: port_name, data_buffer: ""}
     {:ok, state}
   end
@@ -129,14 +134,17 @@ defmodule XGPS.Reader do
     sentence = String.strip((state.data_buffer))
 
     # TODO: Remove after debugging
-    IO.puts sentence
+    # TODO: use logger
+    #IO.puts sentence
+
     parsed_data = XGPS.Parser.parse_sentence(sentence)
 
     {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
     send_update_event({updated, new_gps_data})
 
     # TODO: Remove after debugging
-    IO.inspect new_gps_data
+    # TODO: use logger
+    # IO.inspect new_gps_data
     {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
   end
 
@@ -147,6 +155,10 @@ defmodule XGPS.Reader do
 
   def handle_call(:stop, _from, state) do
     {:stop, :normal, state}
+  end
+
+  def handle_call(:get_gps, _from, state) do
+    {:reply, state.gps_data, state}
   end
 
   def handle_cast({:command, command}, state) do
