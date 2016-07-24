@@ -19,28 +19,10 @@ defmodule XGPS.Port.Reader do
     ]
   end
 
-  defmodule Gpsdata do
-    defstruct [
-      has_fix: false,
-      time: nil,
-      date: nil,
-      latitude: nil,
-      longitude: nil,
-      geoidheight: nil,
-      altitude: nil,
-      speed: nil,
-      angle: nil,
-      magvariation: nil,
-      hdop: nil,
-      fix_quality: nil,
-      satelites: nil
-    ]
-  end
-
   def init({port_name, :init_adafruit_gps}) do
     {:ok, uart_pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
-    gps_data = %Gpsdata{has_fix: false}
+    gps_data = %XGPS.GpsData{has_fix: false}
     state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
     init_adafruit_gps(uart_pid)
     {:ok, state}
@@ -49,7 +31,7 @@ defmodule XGPS.Port.Reader do
   def init({port_name}) do
     {:ok, uart_pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
-    gps_data = %Gpsdata{has_fix: false}
+    gps_data = %XGPS.GpsData{has_fix: false}
     state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
     {:ok, state}
   end

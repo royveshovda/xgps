@@ -18,7 +18,7 @@ use Mix.Config
 #
 # Or configure a 3rd-party app:
 #
-     config :logger, level: :debug
+     config :logger, level: :info
 #
 
 # It is also possible to import configuration files, relative to this

@@ -7,7 +7,8 @@ GPS for Elixir
 XGPS runs as an application and will start along with you application, and connect to an serial port to get GPS data.
 
 ## TODO
-More documentation
+- More documentation
+- Consider GenStage
 
 ## Installation
 
@@ -30,10 +31,16 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     ```
 
 ## Usage 1: Get ask for position when you need one_for_one
-Mostly for testing...
+This usage pattern is mostly for testing.
+```{:ok, pid} = XGPS.Ports_supervisor.start_port("/dev/serial0")
+XGPS.Port.Supervisor.get_gps_data(pid)
+```
+
+Pay attention to the has_fix if it is true or false. If has_fix=false, you cannot trust the other values.
 
 ## Usage 2: Get notified when new update
-GenEvent...
+The most common usage pattern is to subscribe to the GenEvent publisher running
+Check out the code inside the example-folder for an example for a subscriber. You need to implement identical code on you side to receive new positions.
 
 ## dependencies
 To make an effort to be platform independent, XGPS uses [nerves_uart](https://github.com/nerves-project/nerves_uart) for the dirty details. Please make sure to follow the instructions for nerves_uart to make this compile and run on your system.

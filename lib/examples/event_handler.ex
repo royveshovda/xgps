@@ -1,4 +1,4 @@
-defmodule XGPS.Demo.EventHandler do
+defmodule XGPS.Examples.EventHandler do
   use GenEvent
 
   def handle_event({:gps, gps_data}, _) do
