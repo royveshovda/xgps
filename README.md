@@ -30,15 +30,18 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ## Usage: start
 ### Manually
 Simply call:
-```XGPS.Ports_supervisor.start_port("name-of-port")```
+```XGPS.Ports_supervisor.start_port("name-of-port")
+```
 
 ### Config
 Add a line like this in you config:
-``` config :xgps, port_to_start: {"name-of-port"} ```
+``` config :xgps, port_to_start: {"name-of-port"}
+```
 
 ### Config with init
 If you are using the Adafruit Ultimate GPS you can add:
-``` config :xgps, port_to_start: {"name-of-port", :init_adafruit_gps} ```
+``` config :xgps, port_to_start: {"name-of-port", :init_adafruit_gps}
+```
 This will send a seriaes of commands to your GPS to configure it.
 The following commands are then sent:
 - "$PMTK313,1*2E" => enable SBAS
