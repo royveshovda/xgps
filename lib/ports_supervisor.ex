@@ -11,6 +11,17 @@ defmodule XGPS.Ports_supervisor do
     |> Enum.map(fn(pid) -> XGPS.Port.Supervisor.get_port_name(pid) end)
   end
 
+  def get_one_position do
+    children = Supervisor.which_children(__MODULE__)
+    case length(children) do
+      0 -> {:error, :no_port_running}
+      _ ->
+       {_, pid, :supervisor, _} = Enum.at(children, 0)
+       gps_data = XGPS.Port.Supervisor.get_gps_data(pid)
+       {:ok, gps_data}
+    end
+  end
+
   def start_link do
     result = {:ok, pid} = Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
     start_port_if_defined_in_config(pid)
