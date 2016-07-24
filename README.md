@@ -35,7 +35,7 @@ Simply call:
 
 ### Config
 Add a line like this in you config:
-``` config :xgps, port_to_start: {"name-of-port"}
+```config :xgps, port_to_start: {"name-of-port"}
 ```
 
 ### Config with init
