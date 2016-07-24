@@ -7,7 +7,7 @@ defmodule XGPS.Port.Reader do
   end
 
   def get_gps_data(pid) do
-    GenServer.call(pid, :get_gps)
+    GenServer.call(pid, :get_gps_data)
   end
 
   defmodule State do
@@ -91,7 +91,7 @@ defmodule XGPS.Port.Reader do
     {:stop, :normal, state}
   end
 
-  def handle_call(:get_gps, _from, state) do
+  def handle_call(:get_gps_data, _from, state) do
     {:reply, state.gps_data, state}
   end
 
