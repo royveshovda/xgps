@@ -25,24 +25,29 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
       [applications: [:xgps]]
     end
     ```
+
   3. To make an effort to be platform independent, XGPS uses [nerves_uart](https://github.com/nerves-project/nerves_uart) for the dirty details. Please make sure to follow the instructions for nerves_uart to make this compile and run on your system.
 
 ## Usage: start
 ### Manually
 Simply call:
-```XGPS.Ports_supervisor.start_port("name-of-port")
+
+``` XGPS.Ports_supervisor.start_port("name-of-port")
 ```
 
 ### Config
 Add a line like this in you config:
+
 ```config :xgps, port_to_start: {"name-of-port"}
 ```
 
 ### Config with init
 If you are using the Adafruit Ultimate GPS you can add:
+
 ``` config :xgps, port_to_start: {"name-of-port", :init_adafruit_gps}
 ```
-This will send a seriaes of commands to your GPS to configure it.
+
+This will send a series of commands to your GPS to configure it.
 The following commands are then sent:
 - "$PMTK313,1*2E" => enable SBAS
 - "$PMTK319,1*24" => Set SBAS to not test mode
@@ -58,8 +63,10 @@ These sentences will work to initialize other GPS-types supporting the PMTK comm
 ### Manually
 This usage pattern is mostly for testing.
 Call:
+
 ```XGPS.Ports_supervisor.get_one_position
 ```
+
 to get the latest fixed positions.
 
 Pay attention to the has_fix if it is true or false. If has_fix=false, you cannot trust the other values.
