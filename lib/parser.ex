@@ -20,16 +20,16 @@ defmodule XGPS.Parser do
     end
   end
 
-  def unwrap_sentence(sentence) do
+  defp unwrap_sentence(sentence) do
     {body, checksum} = split(sentence)
-    calculated_checksum = calculate_checksum(body) |> int_to_hex_string
+    calculated_checksum = calculate_checksum(body) |> XGPS.Tools.int_to_hex_string
     case calculated_checksum == checksum do
       true -> {:ok, body}
       false -> {:error,:checksum}
     end
   end
 
-  def unwrap_type(body) do
+  defp unwrap_type(body) do
     parts = String.split(body, ",")
     get_type(parts)
   end
@@ -47,14 +47,6 @@ defmodule XGPS.Parser do
   defp xor(x, acc) do
     <<val::utf8>> = x
     Bitwise.bxor(acc, val)
-  end
-
-  def hex_string_to_int(string) do
-    string |> Base.decode16! |> :binary.decode_unsigned
-  end
-
-  def int_to_hex_string(int) do
-    int |> :binary.encode_unsigned |> Base.encode16
   end
 
   defp get_type(["GPRMC"|content]), do: {:rmc, content}
