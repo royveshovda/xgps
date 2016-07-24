@@ -1,4 +1,6 @@
 # XGPS
+[![Build Status](https://travis-ci.org/rveshovda/xgps.svg?branch=master)](https://travis-ci.org/rveshovda/xgps)
+[![Hex version](https://img.shields.io/hexpm/v/xgps.svg "Hex version")](https://hex.pm/packages/xgps)
 
 GPS for Elixir
 
