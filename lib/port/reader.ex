@@ -10,6 +10,10 @@ defmodule XGPS.Port.Reader do
     GenServer.call(pid, :get_gps_data)
   end
 
+  def get_port_name(pid) do
+    GenServer.call(pid, :get_port_name)
+  end
+
   defmodule State do
     defstruct [
       gps_data: nil,
@@ -75,6 +79,10 @@ defmodule XGPS.Port.Reader do
 
   def handle_call(:get_gps_data, _from, state) do
     {:reply, state.gps_data, state}
+  end
+
+  def handle_call(:get_port_name, _from, state) do
+    {:reply, state.port_name, state}
   end
 
   def handle_cast({:command, command}, state) do

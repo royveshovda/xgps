@@ -3,6 +3,11 @@ defmodule XGPS.Port.Supervisor do
 
   def get_gps_data(supervisor_pid) do
     [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
+    XGPS.Port.Reader.get_gps_data(reader_pid)
+  end
+
+  def get_port_name(supervisor_pid) do
+    [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
     XGPS.Port.Reader.get_gps_data(reader_pid) 
   end
 
