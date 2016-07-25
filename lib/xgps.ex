@@ -6,7 +6,7 @@ defmodule XGPS do
 
     children = [
       supervisor(XGPS.Ports_supervisor, []),
-      XGPS.EventManager.child_spec
+      worker(XGPS.Broadcaster, [])
     ]
 
     opts = [strategy: :one_for_one, name: XGPS.Supervisor]
