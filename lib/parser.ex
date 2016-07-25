@@ -141,37 +141,17 @@ defmodule XGPS.Parser do
 
   defp parse_latitude("", ""), do: nil
 
-  defp parse_latitude(string, "N") do
-    value = parse_latitude_degrees(string)
-    value
-  end
-
-  defp parse_latitude(string, "S") do
-    value = parse_latitude_degrees(string)
-    value * (-1)
-  end
-
-  defp parse_latitude_degrees(string) do
+  defp parse_latitude(string, bearing) do
     {deg, _} = String.slice(string,0,2) |> Float.parse
     {min, _} = String.slice(string,2,100) |> Float.parse
-    deg + (min/60.0)
+    XGPS.Tools.lat_to_decimal_degrees(deg,min,bearing)
   end
 
   defp parse_longitude("", ""), do: nil
 
-  defp parse_longitude(string, "E") do
-    value = parse_longitude_degrees(string)
-    value
-  end
-
-  defp parse_longitude(string, "W") do
-    value = parse_longitude_degrees(string)
-    value * (-1)
-  end
-
-  defp parse_longitude_degrees(string) do
+  defp parse_longitude(string, bearing) do
     {deg, _} = String.slice(string,0,3) |> Float.parse
     {min, _} = String.slice(string,3,100) |> Float.parse
-    deg + (min/60.0)
+    XGPS.Tools.lon_to_decimal_degrees(deg,min,bearing)
   end
 end
