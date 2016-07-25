@@ -1,6 +1,4 @@
 defmodule XGPS.Parser do
-  require Bitwise
-
   def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -22,7 +20,7 @@ defmodule XGPS.Parser do
 
   defp unwrap_sentence(sentence) do
     {body, checksum} = split(sentence)
-    calculated_checksum = calculate_checksum(body) |> XGPS.Tools.int_to_hex_string
+    calculated_checksum = XGPS.Tools.calculate_checksum(body) |> XGPS.Tools.int_to_hex_string
     case calculated_checksum == checksum do
       true -> {:ok, body}
       false -> {:error,:checksum}
@@ -38,15 +36,6 @@ defmodule XGPS.Parser do
     [main_raw, checksum] = String.split(sentence,"*",parts: 2)
     main = String.trim_leading(main_raw, "$")
     {main, checksum}
-  end
-
-  defp calculate_checksum text do
-    Enum.reduce(String.codepoints(text), 0, &xor/2)
-  end
-
-  defp xor(x, acc) do
-    <<val::utf8>> = x
-    Bitwise.bxor(acc, val)
   end
 
   defp get_type(["GPRMC"|content]), do: {:rmc, content}
