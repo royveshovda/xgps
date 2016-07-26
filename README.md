@@ -14,7 +14,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:xgps, "~> 0.1.0"}]
+      [{:xgps, "~> 0.3.0"}]
     end
     ```
 
