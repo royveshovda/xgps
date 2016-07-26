@@ -32,6 +32,12 @@ defmodule XGPS.Port.Reader do
     {:ok, state}
   end
 
+  def init({:simulate}) do
+    gps_data = %XGPS.GpsData{has_fix: false}
+    state = %State{gps_data: gps_data, pid: :simulate, port_name: :simulate, data_buffer: ""}
+    {:ok, state}
+  end
+
   def init({port_name}) do
     {:ok, uart_pid} = Nerves.UART.start_link
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
@@ -55,11 +61,11 @@ defmodule XGPS.Port.Reader do
     Nerves.UART.write(uart_pid, cmd6)
   end
 
-  def handle_info({:nerves_uart, _port_name, "\n"}, %State{data_buffer: ""} = state) do
+  def handle_info({:nerves_uart, port_name, "\n"}, %State{port_name: port_name, data_buffer: ""} = state) do
     {:noreply, state}
   end
 
-  def handle_info({:nerves_uart, _port_name, "\n"}, state) do
+  def handle_info({:nerves_uart, port_name, "\n"}, %State{port_name: port_name} = state) do
     sentence = String.strip((state.data_buffer))
     Logger.debug(fn -> "Received: " <> sentence end)
     parsed_data = XGPS.Parser.parse_sentence(sentence)
@@ -68,7 +74,7 @@ defmodule XGPS.Port.Reader do
     {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
   end
 
-  def handle_info({:nerves_uart, _port_name, data}, state) do
+  def handle_info({:nerves_uart, port_name, data}, %State{port_name: port_name} = state) do
     data_buffer = state.data_buffer <> data
     {:noreply, %{state | data_buffer: data_buffer}}
   end
@@ -124,9 +130,8 @@ defmodule XGPS.Port.Reader do
     {:updated, new_gps_data}
   end
 
-  defp update_gps_data(_message, gps_data) do
-    {:not_updated, gps_data}
-  end
+  # Any other message types
+  defp update_gps_data(_message, gps_data), do: {:not_updated, gps_data}
 
   defp knots_to_kmh(speed_in_knots) when is_float(speed_in_knots) do
     speed_in_knots * 1.852
