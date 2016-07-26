@@ -79,7 +79,30 @@ Pay attention to the has_fix if it is true or false. If has_fix=false, you canno
 The most common usage pattern is to subscribe to the GenEvent publisher running
 Check out the code inside the example-folder for an implementation for a subscriber. You need to implement (or copy) similar code to your side to receive new positions.
 
-## TODO
+## Usage: simulation
+
+### Starting manually
+Start a simulated port by calling the following:
+```elixir
+XGPS.Ports_supervisor.start_port(:simulate)
+```
+
+
+### Auto-start from config
+By adding a line to config:
+```elixir
+config :xgps, port_to_start: {:simulate,}
+```
+
+### Sending simulated position
+Send a simulated position using one of the following commands:
+```elixir
+XGPS.Ports_supervisor.send_simulated_no_fix()
+XGPS.Ports_supervisor.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
+```
+
+## Future development
+- Simulation reading from file
 - Consider GenStage
 
 ## Note
