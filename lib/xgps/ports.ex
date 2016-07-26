@@ -1,4 +1,4 @@
-defmodule XGPS.Ports_supervisor do
+defmodule XGPS.Ports do
   use Supervisor
 
   def start_port(port_name) do

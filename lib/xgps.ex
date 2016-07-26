@@ -5,7 +5,7 @@ defmodule XGPS do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(XGPS.Ports_supervisor, []),
+      supervisor(XGPS.Ports, []),
       worker(XGPS.Broadcaster, [])
     ]
 
