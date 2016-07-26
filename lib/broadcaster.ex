@@ -17,32 +17,43 @@ defmodule XGPS.Broadcaster do
   @doc """
   Sends an event and returns only after the event is dispatched.
   """
-  def sync_notify(event, timeout \\ 5000) do
-    GenStage.call(__MODULE__, {:notify, event}, timeout)
+  def async_notify(event) do
+    GenStage.cast(__MODULE__, {:notify, event})
   end
 
   ## Callbacks
 
   def init(:ok) do
-    {:producer, {:queue.new, 0}, dispatcher: GenStage.BroadcastDispatcher}
+    {:producer, {:queue.new, 0, 0}, dispatcher: GenStage.BroadcastDispatcher}
   end
 
-  def handle_call({:notify, event}, from, {queue, demand}) do
-    dispatch_events(:queue.in({from, event}, queue), demand, [])
+  def handle_cancel(_, _, {queue, demand, number_of_subscribers}) do
+    {:noreply, [], {queue, demand, number_of_subscribers - 1}}
   end
 
-  def handle_demand(incoming_demand, {queue, demand}) do
-    dispatch_events(queue, incoming_demand + demand, [])
+  def handle_subscribe(_, _ ,_ ,{queue, demand, number_of_subscribers}) do
+    {:automatic, {queue, demand, number_of_subscribers + 1}}
+  end
+
+  def handle_cast({:notify, _event}, {_queue, _demand, 0}) do
+    {:noreply, [], {:queue.new, 0, 0}}
+  end
+
+  def handle_cast({:notify, event}, {queue, demand, number_of_subscribers}) do
+    dispatch_events(:queue.in(event, queue), demand, [], number_of_subscribers)
+  end
+
+  def handle_demand(incoming_demand, {queue, demand, number_of_subscribers}) do
+    dispatch_events(queue, incoming_demand + demand, [], number_of_subscribers)
   end
 
   # TODO: Make sure the queue does not grow too big
-  defp dispatch_events(queue, demand, events) do
+  defp dispatch_events(queue, demand, events, number_of_subscribers) do
     with d when d > 0 <- demand,
-         {{:value, {from, event}}, queue} <- :queue.out(queue) do
-      GenStage.reply(from, :ok)
-      dispatch_events(queue, demand - 1, [event | events])
+         {{:value, event}, queue} <- :queue.out(queue) do
+      dispatch_events(queue, demand - 1, [event | events], number_of_subscribers)
     else
-      _ -> {:noreply, Enum.reverse(events), {queue, demand}}
+      _ -> {:noreply, Enum.reverse(events), {queue, demand, number_of_subscribers}}
     end
   end
 end
