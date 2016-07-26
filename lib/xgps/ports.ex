@@ -1,16 +1,26 @@
-defmodule XGPS.Ports_supervisor do
+defmodule XGPS.Ports do
   use Supervisor
 
+  @doc """
+  Open one port to be consumed. Needs to have one GPS attached to the port to work.
+  To simulate, give port_name = :simulate
+  """
   def start_port(port_name) do
     Supervisor.start_child(__MODULE__, [{port_name}])
   end
 
+  @doc """
+  Return all the connected port names
+  """
   def get_running_port_names do
     Supervisor.which_children(__MODULE__)
     |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
     |> Enum.map(fn(pid) -> XGPS.Port.Supervisor.get_port_name(pid) end)
   end
 
+  @doc """
+  Return the latest position if atteched to GPS.
+  """
   def get_one_position do
     children = Supervisor.which_children(__MODULE__)
     case length(children) do
@@ -22,11 +32,19 @@ defmodule XGPS.Ports_supervisor do
     end
   end
 
+  @doc """
+  Will send one GPS report as the give position.
+  Since this will effectively generate both RMC and GGA sentences, the broadcaster will produce two values
+  """
   def send_simulated_position(lat, lon, alt) when is_float(lat) and is_float(lon) and is_float(alt) do
     now = DateTime.utc_now()
     send_simulated_position(lat, lon, alt, now)
   end
 
+  @doc """
+  Will send one GPS report as the give position.
+  Since this will effectively generate both RMC and GGA sentences, the broadcaster will produce two values
+  """
   def send_simulated_position(lat, lon, alt, date_time) when is_float(lat) and is_float(lon) and is_float(alt) do
     simulators = get_running_simulators()
     case length(simulators) do
@@ -39,10 +57,15 @@ defmodule XGPS.Ports_supervisor do
     end
   end
 
+  @doc """
+  Will send one GPS report as no fix.
+  Since this will effectively generate both RMC and GGA sentences, the broadcaster will produce two values
+  """
   def send_simulated_no_fix() do
     now = DateTime.utc_now()
     send_simulated_no_fix(now)
   end
+
 
   def send_simulated_no_fix(date_time) do
     simulators = get_running_simulators()
@@ -69,6 +92,8 @@ defmodule XGPS.Ports_supervisor do
         Supervisor.start_child(pid, [portname_with_args])
     end
   end
+
+  # Callbacks
 
   def init(:ok) do
     children = [

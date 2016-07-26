@@ -4,7 +4,7 @@ defmodule XGPS.Mixfile do
   def project do
     [app: :xgps,
      name: XGPS,
-     version: "0.2.0",
+     version: "0.3.0",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -15,26 +15,28 @@ defmodule XGPS.Mixfile do
   end
 
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :gen_stage],
      mod: {XGPS, []}]
   end
 
   defp deps do
     [{:nerves_uart, "~> 0.0.7"},
-     {:mix_test_watch, "~> 0.2.6"}]
+     {:mix_test_watch, "~> 0.2.6"},
+     {:gen_stage, "~> 0.4"}]
   end
 
   defp description do
     """
-    A GPS library written in Elixir.
+    An OTP application for reading and parsing GPS data written in Elixir.
     Will attach to an serial port, and provide positions to subscribers.
+    Distributes positions using GenStage.
     """
   end
 
   defp package do
     [# These are the default files included in the package
      name: :xgps,
-     files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+     files: ["lib", "priv", "mix.exs", "README*", "LICENSE*"],
      maintainers: ["Roy Veshovda"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/rveshovda/xgps"}]
