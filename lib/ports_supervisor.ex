@@ -22,6 +22,20 @@ defmodule XGPS.Ports_supervisor do
     end
   end
 
+  def send_simulated_position(lat, lon, alt) when is_float(lat) and is_float(lon) and is_float(alt) do
+    simulators = Supervisor.which_children(__MODULE__)
+                  |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
+                  |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
+                  |> Enum.filter(fn({_pid, port_name}) -> port_name == :simulate end)
+    case length(simulators) do
+      0 -> {:error, :no_simulator_running}
+      _ ->
+        {sim_pid, :simulate} = Enum.at(simulators, 0)
+        XGPS.Port.Supervisor.send_simulated_position(sim_pid , lat, lon, alt)
+        :ok
+    end
+  end
+
   def start_link do
     result = {:ok, pid} = Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
     start_port_if_defined_in_config(pid)

@@ -23,6 +23,7 @@ defmodule XGPS.Port.Supervisor do
     {rmc, gga} = XGPS.Tools.generate_rmc_and_gga_for_simulation(lat, lon, alt, now)
     send_simulated_data(supervisor_pid, rmc)
     send_simulated_data(supervisor_pid, gga)
+    :ok
   end
 
   def start_link(args) do
