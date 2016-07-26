@@ -87,6 +87,18 @@ defmodule XGPS.Tools do
     {rmc, gga}
   end
 
+  def generate_rmc_and_gga_for_simulation_no_fix(date_time) do
+    date = XGPS.Tools.to_gps_date(date_time)
+    time = XGPS.Tools.to_gps_time(date_time)
+    rmc_body = "GPRMC,#{time},V,,,,,,,#{date},,,A"
+    rmc_checksum = XGPS.Tools.calculate_checksum(rmc_body) |> XGPS.Tools.int_to_hex_string
+    rmc = "$#{rmc_body}*#{rmc_checksum}"
+    gga_body = "GPGGA,#{time},,,,,0,0,,,M,,M,,"
+    gga_checksum = XGPS.Tools.calculate_checksum(gga_body) |> XGPS.Tools.int_to_hex_string
+    gga = "$#{gga_body}*#{gga_checksum}"
+    {rmc, gga}
+  end
+
   defp lat_to_string(deg, min, bearing) when min >= 10.0 do
     deg_string = "#{deg}" |> String.pad_leading(2, "0")
     min_string = "#{Float.round(min,4)}" |> String.pad_trailing(7, "0")
