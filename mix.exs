@@ -21,13 +21,13 @@ defmodule XGPS.Mixfile do
 
   defp deps do
     [{:nerves_uart, "~> 0.0.7"},
-     {:mix_test_watch, "~> 0.2"},
+     {:mix_test_watch, "~> 0.2.6"},
      {:gen_stage, "~> 0.4"}]
   end
 
   defp description do
     """
-    A GPS library written in Elixir.
+    An OTP application for reading and parsing GPS data written in Elixir.
     Will attach to an serial port, and provide positions to subscribers.
     """
   end
