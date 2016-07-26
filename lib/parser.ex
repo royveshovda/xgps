@@ -1,6 +1,4 @@
 defmodule XGPS.Parser do
-  require Bitwise
-
   def start_link do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -22,7 +20,7 @@ defmodule XGPS.Parser do
 
   defp unwrap_sentence(sentence) do
     {body, checksum} = split(sentence)
-    calculated_checksum = calculate_checksum(body) |> XGPS.Tools.int_to_hex_string
+    calculated_checksum = XGPS.Tools.calculate_checksum(body) |> XGPS.Tools.int_to_hex_string
     case calculated_checksum == checksum do
       true -> {:ok, body}
       false -> {:error,:checksum}
@@ -38,15 +36,6 @@ defmodule XGPS.Parser do
     [main_raw, checksum] = String.split(sentence,"*",parts: 2)
     main = String.trim_leading(main_raw, "$")
     {main, checksum}
-  end
-
-  defp calculate_checksum text do
-    Enum.reduce(String.codepoints(text), 0, &xor/2)
-  end
-
-  defp xor(x, acc) do
-    <<val::utf8>> = x
-    Bitwise.bxor(acc, val)
   end
 
   defp get_type(["GPRMC"|content]), do: {:rmc, content}
@@ -141,37 +130,17 @@ defmodule XGPS.Parser do
 
   defp parse_latitude("", ""), do: nil
 
-  defp parse_latitude(string, "N") do
-    value = parse_latitude_degrees(string)
-    value
-  end
-
-  defp parse_latitude(string, "S") do
-    value = parse_latitude_degrees(string)
-    value * (-1)
-  end
-
-  defp parse_latitude_degrees(string) do
+  defp parse_latitude(string, bearing) do
     {deg, _} = String.slice(string,0,2) |> Float.parse
     {min, _} = String.slice(string,2,100) |> Float.parse
-    deg + (min/60.0)
+    XGPS.Tools.lat_to_decimal_degrees(deg,min,bearing)
   end
 
   defp parse_longitude("", ""), do: nil
 
-  defp parse_longitude(string, "E") do
-    value = parse_longitude_degrees(string)
-    value
-  end
-
-  defp parse_longitude(string, "W") do
-    value = parse_longitude_degrees(string)
-    value * (-1)
-  end
-
-  defp parse_longitude_degrees(string) do
+  defp parse_longitude(string, bearing) do
     {deg, _} = String.slice(string,0,3) |> Float.parse
     {min, _} = String.slice(string,3,100) |> Float.parse
-    deg + (min/60.0)
+    XGPS.Tools.lon_to_decimal_degrees(deg,min,bearing)
   end
 end

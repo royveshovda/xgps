@@ -1,5 +1,6 @@
 use Mix.Config
 #config :xgps, port_to_start: {"/dev/serial0", :init_adafruit_gps}
+#config :xgps, port_to_start: {:simulate,}
 config :logger, level: :info
 
 # It is also possible to import configuration files, relative to this
