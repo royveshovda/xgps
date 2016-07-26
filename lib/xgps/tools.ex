@@ -1,6 +1,12 @@
 defmodule XGPS.Tools do
+  @moduledoc """
+  Several different helper functions.
+  """
   require Bitwise
 
+  @doc """
+  Will calculate and return a checksum defined for NMEA sentence.
+  """
   def calculate_checksum text do
     Enum.reduce(String.codepoints(text), 0, &xor/2)
   end
@@ -10,16 +16,55 @@ defmodule XGPS.Tools do
     Bitwise.bxor(acc, val)
   end
 
+  @doc """
+  Converts from hex-string to int.
+  ## Examples
+
+      iex> XGPS.Tools.hex_string_to_int "C0"
+      192
+
+  """
   def hex_string_to_int(string) do
     string |> Base.decode16! |> :binary.decode_unsigned
   end
 
+  @doc """
+  Converts from int to hex-string.
+  ## Examples
+
+      iex> XGPS.Tools.int_to_hex_string 192
+      "C0"
+
+  """
   def int_to_hex_string(int) do
     int |> :binary.encode_unsigned |> Base.encode16
   end
 
+  @doc """
+  Converts latitude from degrees, minutes and bearing into decimal degrees
+  ## Examples
+
+      iex> XGPS.Tools.lat_to_decimal_degrees(54, 41.1600, "N")
+      54.686
+
+      iex> XGPS.Tools.lat_to_decimal_degrees(54, 41.1600, "S")
+      -54.686
+
+  """
   def lat_to_decimal_degrees(degrees, minutes, "N"), do: degrees + (minutes/60.0)
   def lat_to_decimal_degrees(degrees, minutes, "S"), do: (degrees + (minutes/60.0)) * (-1.0)
+
+  @doc """
+  Converts longitude from degrees, minutes and bearing into decimal degrees
+  ## Examples
+
+      iex> XGPS.Tools.lon_to_decimal_degrees(25, 15.6, "E")
+      25.26
+
+      iex> XGPS.Tools.lon_to_decimal_degrees(25, 15.6, "W")
+      -25.26
+
+  """
   def lon_to_decimal_degrees(degrees, minutes, "E"), do: degrees + (minutes/60.0)
   def lon_to_decimal_degrees(degrees, minutes, "W"), do: (degrees + (minutes/60.0)) * (-1.0)
 
@@ -30,6 +75,17 @@ defmodule XGPS.Tools do
     {degrees, minutes, bearing}
   end
 
+  @doc """
+  Convert latitude from decimal degrees into degrees, minutes and bearing
+  ## Examples
+
+      iex> XGPS.Tools.lat_from_decimal_degrees(54.686)
+      {54, 41.1600, "N"}
+
+      iex> XGPS.Tools.lat_from_decimal_degrees(-54.686)
+      {54, 41.1600, "S"}
+
+  """
   def  lat_from_decimal_degrees(decimal_degrees) when decimal_degrees < 0.0 do
     degrees = Float.ceil(decimal_degrees) * (-1.0) |> round
     minutes = (decimal_degrees + degrees) * -60.0
@@ -37,6 +93,17 @@ defmodule XGPS.Tools do
     {degrees, minutes, bearing}
   end
 
+  @doc """
+  Convert longitude from decimal degrees into degrees, minutes and bearing
+  ## Examples
+
+      XGPS.Tools.lon_from_decimal_degrees(25.26)
+      {25, 15.6, "E"}
+
+      XGPS.Tools.lon_from_decimal_degrees(-25.26)
+      {25, 15.6, "W"}
+
+  """
   def  lon_from_decimal_degrees(decimal_degrees) when decimal_degrees >= 0.0 do
     degrees = Float.floor(decimal_degrees) |> round
     minutes = (decimal_degrees - degrees) * 60.0

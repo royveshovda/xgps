@@ -15,7 +15,7 @@ defmodule XGPS.Broadcaster do
   end
 
   @doc """
-  Sends an event and returns only after the event is dispatched.
+  Sends an event async.
   """
   def async_notify(event) do
     GenStage.cast(__MODULE__, {:notify, event})

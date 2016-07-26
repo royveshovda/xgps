@@ -33,7 +33,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 Simply call:
 
   ```elixir
-  XGPS.Ports_supervisor.start_port("name-of-port")
+  XGPS.Ports.start_port("name-of-port")
   ```
 
 ### Config
@@ -68,15 +68,15 @@ This usage pattern is mostly for testing.
 Call:
 
   ```elixir
-  XGPS.Ports_supervisor.get_one_position
+  XGPS.Ports.get_one_position
   ```
 
 to get the latest fixed positions.
 
 Pay attention to the has_fix if it is true or false. If has_fix=false, you cannot trust the other values.
 
-### Automatically (GenEvent)
-The most common usage pattern is to subscribe to the GenEvent publisher running
+### Automatically (GenStage)
+The most common usage pattern is to subscribe to the GenStage producer running.
 Check out the code inside the example-folder for an implementation for a subscriber. You need to implement (or copy) similar code to your side to receive new positions.
 
 ## Usage: simulation
@@ -84,9 +84,8 @@ Check out the code inside the example-folder for an implementation for a subscri
 ### Starting manually
 Start a simulated port by calling the following:
 ```elixir
-XGPS.Ports_supervisor.start_port(:simulate)
+XGPS.Ports.start_port(:simulate)
 ```
-
 
 ### Auto-start from config
 By adding a line to config:
@@ -97,13 +96,12 @@ config :xgps, port_to_start: {:simulate,}
 ### Sending simulated position
 Send a simulated position using one of the following commands:
 ```elixir
-XGPS.Ports_supervisor.send_simulated_no_fix()
-XGPS.Ports_supervisor.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
+XGPS.Ports.send_simulated_no_fix()
+XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ```
 
 ## Future development
 - Simulation reading from file
-- Consider GenStage
 
 ## Note
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.

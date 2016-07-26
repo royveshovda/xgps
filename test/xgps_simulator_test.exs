@@ -5,10 +5,10 @@ defmodule XGPSSimulatorTest do
     lat = 1.234
     lon = 5.678
     alt = 11.22
-    XGPS.Ports_supervisor.start_port(:simulate)
+    XGPS.Ports.start_port(:simulate)
 
-    XGPS.Ports_supervisor.send_simulated_position(lat, lon, alt)
-    {:ok, gps} = XGPS.Ports_supervisor.get_one_position()
+    XGPS.Ports.send_simulated_position(lat, lon, alt)
+    {:ok, gps} = XGPS.Ports.get_one_position()
     assert true == gps.has_fix
     assert lat == gps.latitude
     assert lon == gps.longitude
@@ -16,10 +16,10 @@ defmodule XGPSSimulatorTest do
   end
 
   test "Simulator: send one simulated position - no fix" do
-    XGPS.Ports_supervisor.start_port(:simulate)
+    XGPS.Ports.start_port(:simulate)
 
-    XGPS.Ports_supervisor.send_simulated_no_fix()
-    {:ok, gps} = XGPS.Ports_supervisor.get_one_position()
+    XGPS.Ports.send_simulated_no_fix()
+    {:ok, gps} = XGPS.Ports.get_one_position()
 
     assert false == gps.has_fix
   end
@@ -29,10 +29,10 @@ defmodule XGPSSimulatorTest do
     lon = 5.678
     alt = 11.22
     {:ok, date_time} = NaiveDateTime.new(2016,07,26, 10, 11, 12, {0,6})
-    XGPS.Ports_supervisor.start_port(:simulate)
+    XGPS.Ports.start_port(:simulate)
 
-    XGPS.Ports_supervisor.send_simulated_position(lat, lon, alt, date_time)
-    {:ok, gps} = XGPS.Ports_supervisor.get_one_position()
+    XGPS.Ports.send_simulated_position(lat, lon, alt, date_time)
+    {:ok, gps} = XGPS.Ports.get_one_position()
     assert true == gps.has_fix
     assert lat == gps.latitude
     assert lon == gps.longitude
@@ -43,10 +43,10 @@ defmodule XGPSSimulatorTest do
 
   test "Simulator: send one simulated position - no fix - with date_time" do
     {:ok, date_time} = NaiveDateTime.new(2016,07,26, 10, 11, 12, {0,6})
-    XGPS.Ports_supervisor.start_port(:simulate)
+    XGPS.Ports.start_port(:simulate)
 
-    XGPS.Ports_supervisor.send_simulated_no_fix(date_time)
-    {:ok, gps} = XGPS.Ports_supervisor.get_one_position()
+    XGPS.Ports.send_simulated_no_fix(date_time)
+    {:ok, gps} = XGPS.Ports.get_one_position()
 
     assert false == gps.has_fix
     assert NaiveDateTime.to_date(date_time) == gps.date

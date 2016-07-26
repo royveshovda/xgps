@@ -17,6 +17,9 @@ defmodule XGPS.Example.Consumer do
     {:consumer, :ok, subscribe_to: [XGPS.Broadcaster]}
   end
 
+  @doc """
+  This function will be called once for each report from the GPS.
+  """
   def handle_events(events, _from, state) do
     for event <- events do
       IO.inspect {self(), event}
