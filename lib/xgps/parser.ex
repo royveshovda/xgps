@@ -7,11 +7,7 @@ defmodule XGPS.Parser do
     {:ok, %{}}
   end
 
-  def parse_sentence(sentence_raw) do
-    sentence =
-      sentence_raw
-      |> String.trim_trailing("\n")
-      |> String.trim_trailing("\r")
+  def parse_sentence(sentence) do
     case unwrap_sentence(sentence) do
       {:ok, body} ->
         body
@@ -36,9 +32,13 @@ defmodule XGPS.Parser do
     get_type(parts)
   end
 
-  defp split(sentence) do
-    [main_raw, checksum] = String.split(sentence,"*",parts: 2)
-    main = String.trim_leading(main_raw, "$")
+  defp split(sentence_raw) do
+    sentence =
+      sentence_raw
+      |> String.trim_leading("$")
+      |> String.trim_trailing("\n")
+      |> String.trim_trailing("\r")
+    [main, checksum] = String.split(sentence,"*",parts: 2)
     {main, checksum}
   end
 
