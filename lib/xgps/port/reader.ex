@@ -66,7 +66,7 @@ defmodule XGPS.Port.Reader do
   end
 
   def handle_info({:nerves_uart, port_name, "\n"}, %State{port_name: port_name} = state) do
-    sentence = String.strip((state.data_buffer))
+    sentence = state.data_buffer <> "\n"
     Logger.debug(fn -> "Received: " <> sentence end)
     parsed_data = XGPS.Parser.parse_sentence(sentence)
     {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)

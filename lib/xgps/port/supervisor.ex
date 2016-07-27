@@ -17,8 +17,7 @@ defmodule XGPS.Port.Supervisor do
 
   def send_simulated_data(supervisor_pid, sentence) do
     [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
-    send reader_pid, {:nerves_uart, :simulate, sentence}
-    send reader_pid, {:nerves_uart, :simulate, "\r"}
+    send reader_pid, {:nerves_uart, :simulate, sentence <> "\r"}
     send reader_pid, {:nerves_uart, :simulate, "\n"}
   end
 
