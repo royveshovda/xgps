@@ -9,6 +9,22 @@ defmodule XGPS.Ports do
     Supervisor.start_child(__MODULE__, [{port_name}])
   end
 
+  def stop_port(port_name_to_stop) do
+    children =
+      Supervisor.which_children(__MODULE__)
+      |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
+      |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
+      |> Enum.filter(fn({_pid, port_name}) -> port_name == port_name_to_stop end)
+      |> Enum.map(fn({pid, _port_name}) -> pid end)
+
+    case length(children) do
+      0 -> {:ok, :no_port_running}
+      1 ->
+        pid = Enum.at(children, 0)
+        :ok = Supervisor.stop(pid)
+    end
+  end
+
   @doc """
   Return all the connected port names
   """

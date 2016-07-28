@@ -189,4 +189,32 @@ defmodule XGPS.Tools do
     min_string = "0#{Float.round(min,4)}" |> String.pad_trailing(7, "0")
     deg_string <> min_string <> "," <> bearing
   end
+
+  def extract_sentences(data_buffer) do
+    extract_sentences_from_data(data_buffer, "", [])
+  end
+
+  defp extract_sentences_from_data("", candidate, sentences), do: {sentences, candidate}
+  defp extract_sentences_from_data(data, "", sentences) do
+    head = String.slice(data, 0, 1)
+    tail = String.slice(data, 1, String.length(data)-1)
+    case head == "$" do
+      true ->
+        extract_sentences_from_data(tail, "$", sentences)
+      false ->
+        extract_sentences_from_data(tail, "", sentences)
+    end
+  end
+
+  defp extract_sentences_from_data(data, candidate, sentences) do
+    head = String.slice(data, 0, 1)
+    tail = String.slice(data, 1, String.length(data)-1)
+    case head == "\r\n" do
+      true ->
+        sentence = candidate <> "\r\n"
+        extract_sentences_from_data(tail, "", sentences ++ [sentence])
+      false ->
+        extract_sentences_from_data(tail, candidate <> head, sentences)
+    end
+  end
 end

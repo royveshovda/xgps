@@ -61,22 +61,34 @@ defmodule XGPS.Port.Reader do
     Nerves.UART.write(uart_pid, cmd6)
   end
 
-  def handle_info({:nerves_uart, port_name, "\n"}, %State{port_name: port_name, data_buffer: ""} = state) do
-    {:noreply, state}
-  end
-
-  def handle_info({:nerves_uart, port_name, "\n"}, %State{port_name: port_name} = state) do
-    sentence = state.data_buffer <> "\n"
-    Logger.debug(fn -> "Received: " <> sentence end)
-    parsed_data = XGPS.Parser.parse_sentence(sentence)
-    {updated, new_gps_data} = update_gps_data(parsed_data, state.gps_data)
-    send_update_event({updated, new_gps_data})
-    {:noreply, %{state | data_buffer: "", gps_data: new_gps_data}}
-  end
-
   def handle_info({:nerves_uart, port_name, data}, %State{port_name: port_name} = state) do
-    data_buffer = state.data_buffer <> data
-    {:noreply, %{state | data_buffer: data_buffer}}
+    new_data_buffer = state.data_buffer <> data
+    {sentences, rest} = XGPS.Tools.extract_sentences(new_data_buffer)
+
+    new_gps_data =
+      sentences
+      |> Enum.map(&log_sentence/1)
+      |> Enum.map(&XGPS.Parser.parse_sentence/1)
+      |> Enum.filter(fn(parsed_sentence) -> will_update_gps_data?(parsed_sentence) end)
+      |> Enum.reduce(state.gps_data, &update_gps_data_and_send_notification/2)
+
+    {:noreply, %{state | data_buffer: rest, gps_data: new_gps_data}}
+  end
+
+  defp update_gps_data_and_send_notification(parsed_data, old_gps_data) do
+    new_gps_data = update_gps_data(parsed_data, old_gps_data)
+    Logger.debug(fn -> "New gps_data: : " <> inspect(new_gps_data) end)
+    XGPS.Broadcaster.async_notify(new_gps_data)
+    new_gps_data
+  end
+
+  defp will_update_gps_data?(%XGPS.Messages.RMC{}), do: true
+  defp will_update_gps_data?(%XGPS.Messages.GGA{}), do: true
+  defp will_update_gps_data?(_parsed), do: false
+
+  defp log_sentence(sentence) do
+    Logger.debug(fn -> "Received: " <> sentence end)
+    sentence
   end
 
   def handle_call(:stop, _from, state) do
@@ -96,6 +108,8 @@ defmodule XGPS.Port.Reader do
     {:noreply, state}
   end
 
+  def terminate(_reason, %State{port_name: :simulate}), do: :ok
+
   def terminate(_reason, state) do
     Nerves.UART.close(state.pid)
     Nerves.UART.stop(state.pid)
@@ -103,23 +117,21 @@ defmodule XGPS.Port.Reader do
 
   defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
     speed = knots_to_kmh(rmc.speed_over_groud)
-    new_gps_data = %{gps_data | time: rmc.time,
-                                date: rmc.date,
-                                latitude: rmc.latitude,
-                                longitude: rmc.longitude,
-                                angle: rmc.track_angle,
-                                magvariation: rmc.magnetic_variation,
-                                speed: speed}
-    {:updated, new_gps_data}
+    %{gps_data | time: rmc.time,
+                 date: rmc.date,
+                 latitude: rmc.latitude,
+                 longitude: rmc.longitude,
+                 angle: rmc.track_angle,
+                 magvariation: rmc.magnetic_variation,
+                 speed: speed}
   end
 
   defp update_gps_data(%XGPS.Messages.GGA{fix_quality: 0}, gps_data) do
-    new_gps_data = %{gps_data | has_fix: false}
-    {:updated, new_gps_data}
+    %{gps_data | has_fix: false}
   end
 
   defp update_gps_data(%XGPS.Messages.GGA{} = gga, gps_data) do
-    new_gps_data = %{gps_data | has_fix: true,
+    %{gps_data | has_fix: true,
                                 fix_quality: gga.fix_quality,
                                 satelites: gga.number_of_satelites_tracked,
                                 hdop: gga.horizontal_dilution,
@@ -127,21 +139,10 @@ defmodule XGPS.Port.Reader do
                                 geoidheight: gga.height_over_goeid,
                                 latitude: gga.latitude,
                                 longitude: gga.longitude}
-    {:updated, new_gps_data}
   end
-
-  # Any other message types
-  defp update_gps_data(_message, gps_data), do: {:not_updated, gps_data}
 
   defp knots_to_kmh(speed_in_knots) when is_float(speed_in_knots) do
     speed_in_knots * 1.852
   end
   defp knots_to_kmh(_speed_in_knots), do: 0
-
-  defp send_update_event({:not_updated, _gps_data}), do: :ok
-  defp send_update_event({:updated, gps_data}) do
-    Logger.debug(fn -> "New gps_data: : " <> inspect(gps_data) end)
-    XGPS.Broadcaster.async_notify(gps_data)
-    :ok
-  end
 end
