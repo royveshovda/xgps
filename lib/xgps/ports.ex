@@ -68,7 +68,19 @@ defmodule XGPS.Ports do
       _ ->
         {sim_pid, :simulate} = Enum.at(simulators, 0)
 
-        XGPS.Port.Supervisor.send_simulated_position(sim_pid , lat, lon, alt, date_time)
+        XGPS.Port.Supervisor.send_simulated_position(sim_pid, lat, lon, alt, date_time)
+        :ok
+    end
+  end
+
+  def reset_simulated_port_state() do
+    simulators = get_running_simulators()
+    case length(simulators) do
+      0 -> {:error, :no_simulator_running}
+      _ ->
+        {sim_pid, :simulate} = Enum.at(simulators, 0)
+
+        XGPS.Port.Supervisor.reset_simulated_port_state(sim_pid)
         :ok
     end
   end

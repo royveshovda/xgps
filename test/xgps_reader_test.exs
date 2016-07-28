@@ -12,6 +12,10 @@ defmodule XGPSReaderTest do
     :ok
   end
 
+  setup do
+    XGPS.Ports.reset_simulated_port_state()
+  end
+
   test "valid sentence - send whole at once" do
     send_data("$GPRMC,112233.000,A,5441.1600,N,02515.6000,E,1.37,38.57,190716,,,A*5C\r\n")
     {:ok, expected_time} = Time.new(11,22,33, {0,6})

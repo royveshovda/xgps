@@ -26,7 +26,29 @@ defmodule XGPS.TestSupport.Subscriber do
             end
         end
     end
+  end
 
+  def has_one?(event) do
+    Process.sleep(125)
+    res1 = GenStage.call(__MODULE__, {:any_event, event})
+    case res1 do
+      true -> true
+      false ->
+        Process.sleep(250)
+        res2 =  GenStage.call(__MODULE__, {:any_event, event})
+        case res2 do
+          true -> true
+          false ->
+            Process.sleep(500)
+            res3 =  GenStage.call(__MODULE__, {:any_event, event})
+            case res3 do
+              true -> true
+              false ->
+                Process.sleep(1000)
+                GenStage.call(__MODULE__, {:any_event, event})
+            end
+        end
+    end
   end
 
   def init(:ok) do
@@ -40,6 +62,11 @@ defmodule XGPS.TestSupport.Subscriber do
 
   def handle_call({:any_timestamp, timestamp}, _from, all_events) do
     result = Enum.any?(all_events, fn(event) -> event.time == timestamp end)
+    {:reply, result, [], all_events}
+  end
+
+  def handle_call({:any_event, event}, _from, all_events) do
+    result = Enum.any?(all_events, fn(e) -> e == event end)
     {:reply, result, [], all_events}
   end
 end

@@ -75,6 +75,10 @@ defmodule XGPS.Port.Reader do
     {:noreply, %{state | data_buffer: rest, gps_data: new_gps_data}}
   end
 
+  def handle_info({:simulator, :simulate, :reset_gps_state}, %State{port_name: :simulate} = state) do
+    {:noreply, %{state | gps_data: %XGPS.GpsData{has_fix: false}}}
+  end
+
   defp update_gps_data_and_send_notification(parsed_data, old_gps_data) do
     new_gps_data = update_gps_data(parsed_data, old_gps_data)
     Logger.debug(fn -> "New gps_data: : " <> inspect(new_gps_data) end)
