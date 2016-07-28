@@ -3,7 +3,7 @@ defmodule XGPSReaderTest do
   # Does have to be run separate from others using the :simulate port.
   # Also important to slose the :simulate port after completion
 
-  setup do
+  setup_all do
     {:ok, _pid} = XGPS.Ports.start_port(:simulate)
     {:ok, _pid2} = XGPS.TestSupport.Subscriber.start_link()
     on_exit fn ->

@@ -3,7 +3,7 @@ defmodule XGPSSimulatorTest do
   # Does have to be run separate from others using the :simulate port.
   # Also important to slose the :simulate port after completion
 
-  setup do
+  setup_all do
     {:ok, _pid} = XGPS.Ports.start_port(:simulate)
     on_exit fn ->
       :ok = XGPS.Ports.stop_port(:simulate)
