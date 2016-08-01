@@ -4,7 +4,7 @@ defmodule XGPS.Mixfile do
   def project do
     [app: :xgps,
      name: XGPS,
-     version: "0.3.1",
+     version: "0.4.0",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -36,7 +36,7 @@ defmodule XGPS.Mixfile do
   defp package do
     [# These are the default files included in the package
      name: :xgps,
-     files: ["lib", "priv", "mix.exs", "README*", "LICENSE*"],
+     files: ["lib", "priv", "mix.exs", "README*", "LICENSE*", "simulator_positions.txt"],
      maintainers: ["Roy Veshovda"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/rveshovda/xgps"}]
