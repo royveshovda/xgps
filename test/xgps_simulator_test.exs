@@ -5,7 +5,7 @@ defmodule XGPSSimulatorTest do
 
   setup_all do
     {:ok, _pid} = XGPS.Ports.start_port(:simulate)
-    {:ok, _pid2} = XGPS.TestSupport.Subscriber.start_link()
+    {:ok, _pid2} = XGPS.Test.Subscriber.start_link()
     on_exit fn ->
       :ok = XGPS.Ports.stop_port(:simulate)
     end
@@ -13,7 +13,7 @@ defmodule XGPSSimulatorTest do
   end
 
   setup do
-    XGPS.Ports.reset_simulated_port_state() 
+    XGPS.Ports.reset_simulated_port_state()
   end
 
   test "Simulator: send one simulated position" do
@@ -48,8 +48,8 @@ defmodule XGPSSimulatorTest do
 
 
     XGPS.Ports.send_simulated_position(lat, lon, alt, expected_time)
-    assert XGPS.TestSupport.Subscriber.has_one?(expected_rmc)
-    assert XGPS.TestSupport.Subscriber.has_one?(expected_gga)
+    assert XGPS.Test.Subscriber.has_one?(expected_rmc)
+    assert XGPS.Test.Subscriber.has_one?(expected_gga)
   end
 
   test "Simulator: send one simulated position - no fix - with date_time" do
@@ -70,7 +70,7 @@ defmodule XGPSSimulatorTest do
                         speed: 0.0}
 
     XGPS.Ports.send_simulated_no_fix(expected_time)
-    assert XGPS.TestSupport.Subscriber.has_one?(expected_rmc)
-    assert XGPS.TestSupport.Subscriber.has_one?(expected_gga)
+    assert XGPS.Test.Subscriber.has_one?(expected_rmc)
+    assert XGPS.Test.Subscriber.has_one?(expected_gga)
   end
 end
