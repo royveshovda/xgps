@@ -2,6 +2,7 @@ defmodule XGPS.Port.Supervisor do
   use Supervisor
 
   def start_link(args) do
+    IO.inspect args
     Supervisor.start_link(__MODULE__, args)
   end
 
@@ -37,6 +38,14 @@ defmodule XGPS.Port.Supervisor do
   def reset_simulated_port_state(supervisor_pid) do
     [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
     send reader_pid, {:simulator, :simulate, :reset_gps_state}
+  end
+
+  def init({:simulate, file_name}) do
+    children = [
+      worker(XGPS.Port.Reader, [{:simulate}], restart: :transient),
+      worker(XGPS.Port.Simulator, [{file_name}], restart: :transient)
+    ]
+    supervise(children, strategy: :one_for_one)
   end
 
   def init(args) do

@@ -9,6 +9,14 @@ defmodule XGPS.Ports do
     Supervisor.start_child(__MODULE__, [{port_name}])
   end
 
+  def start_simulator(file_name) do
+    Supervisor.start_child(__MODULE__, [{:simulate, file_name}])
+  end
+
+  def stop_simulator() do
+    stop_port(:simulate)
+  end
+
   def stop_port(port_name_to_stop) do
     children =
       Supervisor.which_children(__MODULE__)
