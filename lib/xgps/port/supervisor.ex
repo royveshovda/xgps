@@ -7,17 +7,23 @@ defmodule XGPS.Port.Supervisor do
   end
 
   def get_gps_data(supervisor_pid) do
-    [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
+    [{_, reader_pid, _, _}] =
+      Supervisor.which_children(supervisor_pid)
+      |> Enum.filter(fn({_,_,_,[module]}) -> module == XGPS.Port.Reader end)
     XGPS.Port.Reader.get_gps_data(reader_pid)
   end
 
   def get_port_name(supervisor_pid) do
-    [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
+    [{_, reader_pid, _, _}] =
+      Supervisor.which_children(supervisor_pid)
+      |> Enum.filter(fn({_,_,_,[module]}) -> module == XGPS.Port.Reader end)
     XGPS.Port.Reader.get_port_name(reader_pid)
   end
 
   def send_simulated_data(supervisor_pid, sentence) do
-    [{_, reader_pid, _, _}] = Supervisor.which_children(supervisor_pid)
+    [{_, reader_pid, _, _}] =
+      Supervisor.which_children(supervisor_pid)
+      |> Enum.filter(fn({_,_,_,[module]}) -> module == XGPS.Port.Reader end)
     send reader_pid, {:nerves_uart, :simulate, sentence <> "\r\n"}
   end
 

@@ -1,0 +1,28 @@
+# Usage: Make a copy of this file and include in your project.
+# Provide a path to your file when starting simulator.
+#
+#
+# Format: LAT, LON \n
+# All positions will be sent with 1 second between them.
+#
+# If you need a specific time with each position, for test-cases;
+# Format: LAT, LON, TIMESTAMP
+#
+# Both LAT and LOT must be given as decimal degrees,
+# TIMESTAMP like this: 2016-07-30T23:24:25
+#
+# TIMESTAMP will *always* be interpreted as UTC,
+#
+# If TIMESTAMP is not given, system time is sent.
+# A mix of position with and without TIMESTAMP will be accepted and started.
+# But you will probably want to either give all with TIMESTAMP or not.
+#
+# Example without TIMESTAMP:
+# 1.1 , 2.2
+#
+# Example with TIMESTAMP:
+# 1.1 , 2.2 , 2016-07-30T23:24:25
+
+1.1, 2.2, 2016-07-30T23:24:25
+3.3, 4.4, 2016-07-30T23:24:26
+5.5, 6.6, 2016-07-30T23:24:27
