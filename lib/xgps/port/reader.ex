@@ -18,31 +18,32 @@ defmodule XGPS.Port.Reader do
     defstruct [
       gps_data: nil,
       pid: nil,
-      port_name: nil,
-      data_buffer: nil
+      port_name: nil
     ]
   end
 
   def init({port_name, :init_adafruit_gps}) do
     {:ok, uart_pid} = Nerves.UART.start_link
+    :ok = Nerves.UART.configure(uart_pid, framing: {Nerves.UART.Framing.Line, separator: "\r\n"})
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
+    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
     init_adafruit_gps(uart_pid)
     {:ok, state}
   end
 
   def init({:simulate}) do
     gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: :simulate, port_name: :simulate, data_buffer: ""}
+    state = %State{gps_data: gps_data, pid: :simulate, port_name: :simulate}
     {:ok, state}
   end
 
   def init({port_name}) do
     {:ok, uart_pid} = Nerves.UART.start_link
+    :ok = Nerves.UART.configure(uart_pid, framing: {Nerves.UART.Framing.Line, separator: "\r\n"})
     :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, data_buffer: ""}
+    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
     {:ok, state}
   end
 
@@ -62,17 +63,18 @@ defmodule XGPS.Port.Reader do
   end
 
   def handle_info({:nerves_uart, port_name, data}, %State{port_name: port_name} = state) do
-    new_data_buffer = state.data_buffer <> data
-    {sentences, rest} = XGPS.Tools.extract_sentences(new_data_buffer)
+    log_sentence(data)
+    parsed_sentence = XGPS.Parser.parse_sentence(data)
 
     new_gps_data =
-      sentences
-      |> Enum.map(&log_sentence/1)
-      |> Enum.map(&XGPS.Parser.parse_sentence/1)
-      |> Enum.filter(fn(parsed_sentence) -> will_update_gps_data?(parsed_sentence) end)
-      |> Enum.reduce(state.gps_data, &update_gps_data_and_send_notification/2)
+      case will_update_gps_data?(parsed_sentence) do
+        true ->
+          update_gps_data_and_send_notification(parsed_sentence, state.gps_data)
+        false ->
+          state.gps_data
+      end
 
-    {:noreply, %{state | data_buffer: rest, gps_data: new_gps_data}}
+    {:noreply, %{state | gps_data: new_gps_data}}
   end
 
   def handle_info({:simulator, :simulate, :reset_gps_state}, %State{port_name: :simulate} = state) do

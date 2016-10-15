@@ -4,7 +4,7 @@ defmodule XGPS.Mixfile do
   def project do
     [app: :xgps,
      name: XGPS,
-     version: "0.4.0",
+     version: "0.5.0",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -20,9 +20,9 @@ defmodule XGPS.Mixfile do
   end
 
   defp deps do
-    [{:nerves_uart, "~> 0.0.7"},
+    [{:nerves_uart, "~> 0.1.1"},
      {:mix_test_watch, "~> 0.2.6"},
-     {:gen_stage, "~> 0.4"}]
+     {:gen_stage, "~> 0.6.1"}]
   end
 
   defp description do

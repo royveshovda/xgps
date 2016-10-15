@@ -40,46 +40,4 @@ defmodule XGPSToolsTest do
     assert expected_rmc == actual_rmc
     assert expected_gga == actual_gga
   end
-
-  test "Parse sentence - no start" do
-    input = "fake input"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert sentences == []
-    assert rest == ""
-  end
-
-  test "Parse sentence - start but no end" do
-    input = "noisy $sentence"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert [] = sentences
-    assert "$sentence" == rest
-  end
-
-  test "Parse sentence - single sentence" do
-    input = "$sentence\r\n"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert ["$sentence\r\n"] == sentences
-    assert "" == rest
-  end
-
-  test "Parse sentence - single sentence + partial" do
-    input = "$sentence1\r\n$sen"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert ["$sentence1\r\n"] == sentences
-    assert "$sen" == rest
-  end
-
-  test "Parse sentence - two sentences" do
-    input = "$sentence1\r\n$sentences2\r\n"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert ["$sentence1\r\n", "$sentences2\r\n"] == sentences
-    assert "" == rest
-  end
-
-  test "Parse sentence - two sentences - with noise before and after" do
-    input = "noise$sentence1\r\n$sentences2\r\nmore noise"
-    {sentences, rest} = XGPS.Tools.extract_sentences(input)
-    assert ["$sentence1\r\n", "$sentences2\r\n"] == sentences
-    assert "" == rest
-  end
 end

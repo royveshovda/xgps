@@ -35,6 +35,7 @@ defmodule XGPS.Parser do
   defp split(sentence_raw) do
     sentence =
       sentence_raw
+      |> String.trim_leading("\n")
       |> String.trim_leading("$")
       |> String.trim_trailing("\n")
       |> String.trim_trailing("\r")

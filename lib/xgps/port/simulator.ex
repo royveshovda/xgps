@@ -30,8 +30,7 @@ defmodule XGPS.Port.Simulator do
   end
 
   def handle_info(:send_position, %State{positions: positions, next_position_index: idx} = state) do
-    pos = Enum.at(positions, idx)
-
+    #pos = Enum.at(positions, idx)
     #IO.inspect pos
     # TODO: Get position of supervisor
 
