@@ -22,7 +22,9 @@ defmodule XGPS.Mixfile do
   defp deps do
     [{:nerves_uart, "~> 0.1.1"},
      {:mix_test_watch, "~> 0.2.6"},
-     {:gen_stage, "~> 0.6.1"}]
+     {:gen_stage, "~> 0.6.1"},
+     {:ex_doc, ">= 0.0.0", only: :dev}
+    ]
   end
 
   defp description do
@@ -36,7 +38,7 @@ defmodule XGPS.Mixfile do
   defp package do
     [# These are the default files included in the package
      name: :xgps,
-     files: ["lib", "priv", "mix.exs", "README*", "LICENSE*", "simulator_positions.txt"],
+     files: ["lib", "mix.exs", "README*", "LICENSE*", "simulator_positions.txt"],
      maintainers: ["Roy Veshovda"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/rveshovda/xgps"}]
