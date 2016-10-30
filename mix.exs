@@ -4,11 +4,11 @@ defmodule XGPS.Mixfile do
   def project do
     [app: :xgps,
      name: XGPS,
-     version: "0.4.0",
+     version: "0.4.1",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     source_url: "https://github.com/rveshovda/xgps",
+     source_url: "https://github.com/royveshovda/xgps",
      deps: deps(),
      description: description(),
      package: package()]
@@ -41,6 +41,6 @@ defmodule XGPS.Mixfile do
      files: ["lib", "mix.exs", "README*", "LICENSE*", "simulator_positions.txt"],
      maintainers: ["Roy Veshovda"],
      licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/rveshovda/xgps"}]
+     links: %{"GitHub" => "https://github.com/royveshovda/xgps"}]
   end
 end
