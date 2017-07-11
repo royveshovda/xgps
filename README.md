@@ -101,7 +101,9 @@ XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ```
 
 ## Future development
+- Update to current version for all dependencies
 - Simulation reading from file
+
 
 ## Note
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.
