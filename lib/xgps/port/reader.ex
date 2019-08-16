@@ -4,10 +4,20 @@ defmodule XGPS.Port.Reader do
   require Logger
 
   alias Circuits.UART
+  alias XGPS.Driver.State
 
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
-  end
+  # For legacy purpose
+  def start_link({port_name, :init_adafruit_gps}),
+    do: start_link({port_name, XGPS.Driver.AdafruitGps})
+
+  def start_link({:simulate}),
+    do: GenServer.start_link(__MODULE__, :simulate)
+  
+  def start_link({port_name}) when is_binary(port_name),
+    do: start_link({port_name, XGPS.Driver.Generic})
+  
+  def start_link({port_name, mod}) when is_atom(mod),
+    do: GenServer.start_link(__MODULE__, {port_name, mod})
 
   def get_gps_data(pid) do
     GenServer.call(pid, :get_gps_data)
@@ -16,63 +26,30 @@ defmodule XGPS.Port.Reader do
   def get_port_name(pid) do
     GenServer.call(pid, :get_port_name)
   end
+  
+  ###
+  ### Callbacks
+  ###
+  def init({port_name, mod}) do
+    {:ok, uart_pid} = UART.start_link()
 
-  defmodule State do
-    defstruct [
-      gps_data: nil,
-      pid: nil,
-      port_name: nil
-    ]
-  end
-
-  def init({port_name, :init_adafruit_gps}) do
-    {:ok, uart_pid} = UART.start_link
-    :ok = UART.configure(uart_pid, framing: {UART.Framing.Line, separator: "\r\n"})
-    :ok = UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
-    init_adafruit_gps(uart_pid)
+    
+    {:ok, state} =
+      %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, mod: mod}
+      |> mod.init()
+    
     {:ok, state}
   end
 
-  def init({:simulate}) do
-    gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: :simulate, port_name: :simulate}
-    {:ok, state}
-  end
-
-  def init({port_name}) do
-    {:ok, uart_pid} = UART.start_link
-    :ok = UART.configure(uart_pid, framing: {UART.Framing.Line, separator: "\r\n"})
-    :ok = UART.open(uart_pid, port_name, speed: 9600, active: true)
-    gps_data = %XGPS.GpsData{has_fix: false}
-    state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
-    {:ok, state}
-  end
-
-  defp init_adafruit_gps(uart_pid) do
-    cmd1 = "$PMTK313,1*2E\r\n" # enable SBAS
-    cmd2 = "$PMTK319,1*24\r\n" # Set SBAS to not test mode
-    cmd3 = "$PMTK301,2*2E\r\n" # Enable SBAS to be used for DGPS
-    cmd4 = "$PMTK286,1*23\r\n" # Enable AIC (anti-inteference)
-    cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n" # Output only RMC & GGA
-    cmd6 = "$PMTK397,0*23\r\n" # Disable nav-speed threshold
-    UART.write(uart_pid, cmd1)
-    UART.write(uart_pid, cmd2)
-    UART.write(uart_pid, cmd3)
-    UART.write(uart_pid, cmd4)
-    UART.write(uart_pid, cmd5)
-    UART.write(uart_pid, cmd6)
-  end
-
-  def handle_info({:circuits_uart, port_name, data}, %State{port_name: port_name} = state) do
-    log_sentence(data)
+  def handle_info({:circuits_uart, port_name, data}, %{port_name: port_name} = state) do
+    Logger.debug(fn -> inspect(data) end)
     parsed_sentence = XGPS.Parser.parse_sentence(data)
 
     new_gps_data =
       case will_update_gps_data?(parsed_sentence) do
         true ->
-          update_gps_data_and_send_notification(parsed_sentence, state.gps_data)
+          update_gps_data_and_send_notification(parsed_sentence, state.driver.gps_data)
         false ->
           state.gps_data
       end
@@ -82,22 +59,6 @@ defmodule XGPS.Port.Reader do
 
   def handle_info({:simulator, :simulate, :reset_gps_state}, %State{port_name: :simulate} = state) do
     {:noreply, %{state | gps_data: %XGPS.GpsData{has_fix: false}}}
-  end
-
-  defp update_gps_data_and_send_notification(parsed_data, old_gps_data) do
-    new_gps_data = update_gps_data(parsed_data, old_gps_data)
-    Logger.debug(fn -> "New gps_data: : " <> inspect(new_gps_data) end)
-    XGPS.Broadcaster.async_notify(new_gps_data)
-    new_gps_data
-  end
-
-  defp will_update_gps_data?(%XGPS.Messages.RMC{}), do: true
-  defp will_update_gps_data?(%XGPS.Messages.GGA{}), do: true
-  defp will_update_gps_data?(_parsed), do: false
-
-  defp log_sentence(sentence) do
-    Logger.debug(fn -> "Received: " <> sentence end)
-    sentence
   end
 
   def handle_call(:stop, _from, state) do
@@ -123,6 +84,20 @@ defmodule XGPS.Port.Reader do
     UART.close(state.pid)
     UART.stop(state.pid)
   end
+
+  ###
+  ### Priv
+  ###
+  defp update_gps_data_and_send_notification(parsed_data, old_gps_data) do
+    new_gps_data = update_gps_data(parsed_data, old_gps_data)
+    Logger.debug(fn -> "New gps_data: : " <> inspect(new_gps_data) end)
+    XGPS.Broadcaster.async_notify(new_gps_data)
+    new_gps_data
+  end
+
+  defp will_update_gps_data?(%XGPS.Messages.RMC{}), do: true
+  defp will_update_gps_data?(%XGPS.Messages.GGA{}), do: true
+  defp will_update_gps_data?(_parsed), do: false
 
   defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
     speed = knots_to_kmh(rmc.speed_over_groud)
