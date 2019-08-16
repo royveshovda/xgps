@@ -12,12 +12,17 @@ defmodule XGPS.Port.Reader do
 
   def start_link({:simulate}),
     do: GenServer.start_link(__MODULE__, :simulate)
-  
+
   def start_link({port_name}) when is_binary(port_name),
     do: start_link({port_name, XGPS.Driver.Generic})
-  
+
   def start_link({port_name, mod}) when is_atom(mod),
     do: GenServer.start_link(__MODULE__, {port_name, mod})
+
+  def start_link({port_name, driver}) when is_binary(driver) do
+    mod = :"Elixir.XGPS.Driver.#{driver}"
+    GenServer.start_link(__MODULE__, {port_name, mod})
+  end
 
   def get_gps_data(pid) do
     GenServer.call(pid, :get_gps_data)
@@ -26,7 +31,7 @@ defmodule XGPS.Port.Reader do
   def get_port_name(pid) do
     GenServer.call(pid, :get_port_name)
   end
-  
+
   ###
   ### Callbacks
   ###
@@ -35,11 +40,11 @@ defmodule XGPS.Port.Reader do
     {:ok, uart_pid} = UART.start_link()
 
     gps_data = %XGPS.GpsData{has_fix: false}
-    
+
     {:ok, state} =
       %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, mod: mod}
       |> mod.init()
-    
+
     {:ok, state}
   end
 
@@ -51,6 +56,7 @@ defmodule XGPS.Port.Reader do
       case will_update_gps_data?(parsed_sentence) do
         true ->
           update_gps_data_and_send_notification(parsed_sentence, state.gps_data)
+
         false ->
           state.gps_data
       end
@@ -75,7 +81,7 @@ defmodule XGPS.Port.Reader do
   end
 
   def handle_cast({:command, command}, state) do
-    UART.write(state.pid, (command <> "\r\n"))
+    UART.write(state.pid, command <> "\r\n")
     {:noreply, state}
   end
 
@@ -102,13 +108,17 @@ defmodule XGPS.Port.Reader do
 
   defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
     speed = knots_to_kmh(rmc.speed_over_groud)
-    %{gps_data | time: rmc.time,
-                 date: rmc.date,
-                 latitude: rmc.latitude,
-                 longitude: rmc.longitude,
-                 angle: rmc.track_angle,
-                 magvariation: rmc.magnetic_variation,
-                 speed: speed}
+
+    %{
+      gps_data
+      | time: rmc.time,
+        date: rmc.date,
+        latitude: rmc.latitude,
+        longitude: rmc.longitude,
+        angle: rmc.track_angle,
+        magvariation: rmc.magnetic_variation,
+        speed: speed
+    }
   end
 
   defp update_gps_data(%XGPS.Messages.GGA{fix_quality: 0}, gps_data) do
@@ -116,18 +126,22 @@ defmodule XGPS.Port.Reader do
   end
 
   defp update_gps_data(%XGPS.Messages.GGA{} = gga, gps_data) do
-    %{gps_data | has_fix: true,
-                                fix_quality: gga.fix_quality,
-                                satelites: gga.number_of_satelites_tracked,
-                                hdop: gga.horizontal_dilution,
-                                altitude: gga.altitude,
-                                geoidheight: gga.height_over_goeid,
-                                latitude: gga.latitude,
-                                longitude: gga.longitude}
+    %{
+      gps_data
+      | has_fix: true,
+        fix_quality: gga.fix_quality,
+        satelites: gga.number_of_satelites_tracked,
+        hdop: gga.horizontal_dilution,
+        altitude: gga.altitude,
+        geoidheight: gga.height_over_goeid,
+        latitude: gga.latitude,
+        longitude: gga.longitude
+    }
   end
 
   defp knots_to_kmh(speed_in_knots) when is_float(speed_in_knots) do
     speed_in_knots * 1.852
   end
+
   defp knots_to_kmh(_speed_in_knots), do: 0
 end
