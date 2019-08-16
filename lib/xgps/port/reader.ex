@@ -31,6 +31,7 @@ defmodule XGPS.Port.Reader do
   ### Callbacks
   ###
   def init({port_name, mod}) do
+    Logger.info("Start receiver #{mod} on port #{port_name}")
     {:ok, uart_pid} = UART.start_link()
 
     gps_data = %XGPS.GpsData{has_fix: false}
@@ -49,7 +50,7 @@ defmodule XGPS.Port.Reader do
     new_gps_data =
       case will_update_gps_data?(parsed_sentence) do
         true ->
-          update_gps_data_and_send_notification(parsed_sentence, state.driver.gps_data)
+          update_gps_data_and_send_notification(parsed_sentence, state.gps_data)
         false ->
           state.gps_data
       end

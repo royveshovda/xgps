@@ -2,7 +2,6 @@ defmodule XGPS.Port.Supervisor do
   use Supervisor
 
   def start_link(args) do
-    IO.inspect args
     Supervisor.start_link(__MODULE__, args)
   end
 
