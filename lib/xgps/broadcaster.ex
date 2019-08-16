@@ -1,5 +1,3 @@
-alias Experimental.{GenStage}
-
 defmodule XGPS.Broadcaster do
   @moduledoc """
   Heavily inspired (almost a copy) from the GenEvent-replacement example from GenStage-repo at:
