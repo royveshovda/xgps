@@ -39,9 +39,9 @@ defmodule XGPS.Port.Reader do
   end
 
   def init({port_name}) do
-    {:ok, uart_pid} = Nerves.UART.start_link
-    :ok = Nerves.UART.configure(uart_pid, framing: {Nerves.UART.Framing.Line, separator: "\r\n"})
-    :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
+    {:ok, uart_pid} = Circuits.UART.start_link
+    :ok = Circuits.UART.configure(uart_pid, framing: {Circuits.UART.Framing.Line, separator: "\r\n"})
+    :ok = Circuits.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %XGPS.GpsData{has_fix: false}
     state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
     {:ok, state}
@@ -54,15 +54,15 @@ defmodule XGPS.Port.Reader do
     cmd4 = "$PMTK286,1*23\r\n" # Enable AIC (anti-inteference)
     cmd5 = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n" # Output only RMC & GGA
     cmd6 = "$PMTK397,0*23\r\n" # Disable nav-speed threshold
-    Nerves.UART.write(uart_pid, cmd1)
-    Nerves.UART.write(uart_pid, cmd2)
-    Nerves.UART.write(uart_pid, cmd3)
-    Nerves.UART.write(uart_pid, cmd4)
-    Nerves.UART.write(uart_pid, cmd5)
-    Nerves.UART.write(uart_pid, cmd6)
+    Circuits.UART.write(uart_pid, cmd1)
+    Circuits.UART.write(uart_pid, cmd2)
+    Circuits.UART.write(uart_pid, cmd3)
+    Circuits.UART.write(uart_pid, cmd4)
+    Circuits.UART.write(uart_pid, cmd5)
+    Circuits.UART.write(uart_pid, cmd6)
   end
 
-  def handle_info({:nerves_uart, port_name, data}, %State{port_name: port_name} = state) do
+  def handle_info({:circuits_uart, port_name, data}, %State{port_name: port_name} = state) do
     log_sentence(data)
     parsed_sentence = XGPS.Parser.parse_sentence(data)
 
@@ -110,15 +110,15 @@ defmodule XGPS.Port.Reader do
   end
 
   def handle_cast({:command, command}, state) do
-    Nerves.UART.write(state.pid, (command <> "\r\n"))
+    Circuits.UART.write(state.pid, (command <> "\r\n"))
     {:noreply, state}
   end
 
   def terminate(_reason, %State{port_name: :simulate}), do: :ok
 
   def terminate(_reason, state) do
-    Nerves.UART.close(state.pid)
-    Nerves.UART.stop(state.pid)
+    Circuits.UART.close(state.pid)
+    Circuits.UART.stop(state.pid)
   end
 
   defp update_gps_data(%XGPS.Messages.RMC{} = rmc, gps_data) do
