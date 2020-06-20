@@ -23,9 +23,9 @@ defmodule XGPS.Port.Reader do
   end
 
   def init({port_name, :init_adafruit_gps}) do
-    {:ok, uart_pid} = Nerves.UART.start_link
-    :ok = Nerves.UART.configure(uart_pid, framing: {Nerves.UART.Framing.Line, separator: "\r\n"})
-    :ok = Nerves.UART.open(uart_pid, port_name, speed: 9600, active: true)
+    {:ok, uart_pid} = Circuits.UART.start_link
+    :ok = Circuits.UART.configure(uart_pid, framing: {Circuits.UART.Framing.Line, separator: "\r\n"})
+    :ok = Circuits.UART.open(uart_pid, port_name, speed: 9600, active: true)
     gps_data = %XGPS.GpsData{has_fix: false}
     state = %State{gps_data: gps_data, pid: uart_pid, port_name: port_name}
     init_adafruit_gps(uart_pid)
