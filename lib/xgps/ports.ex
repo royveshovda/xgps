@@ -121,8 +121,8 @@ defmodule XGPS.Ports do
   end
 
   defp start_port_if_defined_in_config(pid) do
-    case Application.get_env(:xgps, :port_to_start, :no_port_to_start) do
-      :no_port_to_start ->
+    case Application.get_env(:xgps, :port_to_start) do
+      nil ->
         :ok
       portname_with_args ->
         Supervisor.start_child(pid, [portname_with_args])
