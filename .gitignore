@@ -6,3 +6,4 @@ erl_crash.dump
 /priv
 *.o
 /doc
+.elixir_ls

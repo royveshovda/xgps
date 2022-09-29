@@ -46,17 +46,33 @@ defmodule XGPS.Port.Supervisor do
   end
 
   def init({:simulate, file_name}) do
+    IO.puts "simulate"
     children = [
-      worker(XGPS.Port.Reader, [{:simulate}], restart: :transient),
-      worker(XGPS.Port.Simulator, [{file_name}], restart: :transient)
+      %{
+        id: PortReader,
+        start: { XGPS.Port.Reader, :start_link, [{:simulate}]},
+        restart: :transient,
+        type: :worker
+      },
+      %{
+        id: PortSimulator,
+        start: { XGPS.Port.Simulator, :start_link, [{file_name}]},
+        restart: :transient,
+        type: :worker
+      }
     ]
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   def init(args) do
     children = [
-      worker(XGPS.Port.Reader, [args], restart: :transient)
+      %{
+        id: PortReader,
+        start: { XGPS.Port.Reader, :start_link, [args]},
+        restart: :transient,
+        type: :worker
+      }
     ]
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
