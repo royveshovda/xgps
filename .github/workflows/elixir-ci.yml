@@ -12,8 +12,8 @@ jobs:
     name: mix test - OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
-        otp: ['25.1', '24.3.4', '20.3.8.26']
-        elixir: ['1.14.0', '1.13.4', '1.10.4']
+        otp: ['25.1', '24.3.4']
+        elixir: ['1.14.0', '1.13.4']
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
