@@ -4,6 +4,6 @@ defmodule XGPS.Driver.Simulator do
   """
 
   def init(state) do
-    state
+    {:ok, state}
   end
 end
