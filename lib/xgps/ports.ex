@@ -158,7 +158,7 @@ defmodule XGPS.Ports do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def get_running_simulators do
+  defp get_running_simulators do
     DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
     |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
