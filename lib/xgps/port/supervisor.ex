@@ -23,7 +23,7 @@ defmodule XGPS.Port.Supervisor do
     [{_, reader_pid, _, _}] =
       Supervisor.which_children(supervisor_pid)
       |> Enum.filter(fn({_,_,_,[module]}) -> module == XGPS.Port.Reader end)
-    send reader_pid, {:nerves_uart, :simulate, sentence <> "\r\n"}
+    send reader_pid, {:circuits_uart, :simulate, sentence <> "\r\n"}
   end
 
   def send_simulated_position(supervisor_pid, lat, lon, alt, date_time) do

@@ -11,7 +11,7 @@ defmodule XGPS.Port.Reader do
     do: start_link({port_name, XGPS.Driver.AdafruitGps})
 
   def start_link({:simulate}),
-    do: GenServer.start_link(__MODULE__, :simulate)
+    do: start_link({:simulate, XGPS.Driver.Simulator})
 
   def start_link({port_name}) when is_binary(port_name),
     do: start_link({port_name, XGPS.Driver.Generic})

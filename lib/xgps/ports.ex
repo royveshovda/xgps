@@ -6,19 +6,25 @@ defmodule XGPS.Ports do
   To simulate, give port_name = :simulate
   """
   def start_port(port_name) do
-    #DynamicSupervisor.start_child(__MODULE__, [{port_name}])
     child =
     %{
-      id: XGPS.Port.Reader,
-      start: {XGPS.Port.Reader, :start_link, [port_name]},
+      id: XGPS.Port.Supervisor,
+      start: {XGPS.Port.Supervisor, :start_link, [port_name]},
       restart: :transient,
-      type: :worker
+      type: :supervisor
     }
     DynamicSupervisor.start_child(__MODULE__, child)
   end
 
   def start_simulator(file_name) do
-    DynamicSupervisor.start_child(__MODULE__, [{:simulate, file_name}])
+    child =
+    %{
+      id: XGPS.Port.Reader,
+      start: {XGPS.Port.Supervisor, :start_link, [{:simulate, file_name}]},
+      restart: :transient,
+      type: :supervisor
+    }
+    DynamicSupervisor.start_child(__MODULE__, child)
   end
 
   def stop_simulator() do
@@ -134,7 +140,14 @@ defmodule XGPS.Ports do
         :ok
       portname_with_args ->
         IO.puts("Start port directly")
-        res = {:ok, _pid} = DynamicSupervisor.start_child(pid, {XGPS.Port.Reader, portname_with_args})
+        child =
+          %{
+            id: XGPS.Port.Supervisor,
+            start: {XGPS.Port.Supervisor, :start_link, [portname_with_args]},
+            restart: :transient,
+            type: :supervisor
+          }
+        res = {:ok, _pid} = DynamicSupervisor.start_child(pid, child)
         res
     end
   end
@@ -145,8 +158,8 @@ defmodule XGPS.Ports do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  defp get_running_simulators do
-    Supervisor.which_children(__MODULE__)
+  def get_running_simulators do
+    DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
     |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
     |> Enum.filter(fn({_pid, port_name}) -> port_name == :simulate end)

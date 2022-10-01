@@ -14,4 +14,9 @@ port_to_start =
 
 config :xgps, port_to_start: port_to_start
 
+#config :xgps, port_to_start: {"/dev/ttyUSB0", "AdafruitGps"}
+#config :xgps, port_to_start: {:simulate}
+
+
+
 import_config "#{Mix.env}.exs"
