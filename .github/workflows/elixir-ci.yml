@@ -2,9 +2,9 @@ name: Elixir CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -14,8 +14,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: '1.14.0'
-          elixir-version: '25.1'
+          otp-version: '1.13.0'
+          elixir-version: '25.0'
       - name: Install Dependencies
         run: mix deps.get
       - name: Run Tests
