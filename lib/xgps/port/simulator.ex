@@ -41,14 +41,14 @@ defmodule XGPS.Port.Simulator do
     {:noreply, %{state | next_position_index: next_idx}}
   end
 
-  defp send_position(parent_pid, {lat, lon}) do
+  defp send_position(parent_pid, {lat, lon, alt}) do
     time = NaiveDateTime.utc_now()
-    send_position(parent_pid, {lat, lon, time})
+    send_position(parent_pid, {lat, lon, alt, time})
   end
 
-  defp send_position(parent_pid, {lat, lon, time}) do
+  defp send_position(parent_pid, {lat, lon, alt, time}) do
     Logger.debug("Sending: #{lat}, #{lon} -- #{time}")
-    XGPS.Port.Supervisor.send_simulated_position(parent_pid, lat, lon, 0, time)
+    XGPS.Port.Supervisor.send_simulated_position(parent_pid, lat, lon, alt, time)
     :ok
   end
 
@@ -57,16 +57,18 @@ defmodule XGPS.Port.Simulator do
     parse_line_pieces(pieces)
   end
 
-  defp parse_line_pieces([lat_s, lon_s]) do
+  defp parse_line_pieces([lat_s, lon_s, alt_s]) do
     {lat, _} = Float.parse(lat_s)
     {lon, _} = Float.parse(lon_s)
-    {lat, lon}
+    {alt, _} = Float.parse(alt_s)
+    {lat, lon, alt}
   end
 
-  defp parse_line_pieces([lat_s, lon_s, timestamp_s]) do
+  defp parse_line_pieces([lat_s, lon_s, alt_s, timestamp_s]) do
     {lat, _} = Float.parse(lat_s)
     {lon, _} = Float.parse(lon_s)
+    {alt, _} = Float.parse(alt_s)
     {:ok, timestamp} = NaiveDateTime.from_iso8601(timestamp_s)
-    {lat, lon, timestamp}
+    {lat, lon, alt, timestamp}
   end
 end
