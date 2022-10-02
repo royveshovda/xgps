@@ -2,14 +2,14 @@
 # Provide a path to your file when starting simulator.
 #
 #
-# Format: LAT, LON \n
+# Format: LAT, LON, ALT \n
 # All positions will be sent with 1 second between them.
 #
 # If you need a specific time with each position, for test-cases;
-# Format: LAT, LON, TIMESTAMP
+# Format: LAT, LON, ALT, TIMESTAMP
 #
 # Both LAT and LOT must be given as decimal degrees,
-# TIMESTAMP like this: 2016-07-30T23:24:25
+# TIMESTAMP like this: 2022-10-02T06:12:13
 #
 # TIMESTAMP will *always* be interpreted as UTC,
 #
@@ -18,11 +18,11 @@
 # But you will probably want to either give all with TIMESTAMP or not.
 #
 # Example without TIMESTAMP:
-# 1.1 , 2.2
+# 1.1 , 2.2, 3.3
 #
 # Example with TIMESTAMP:
-# 1.1 , 2.2 , 2022-10-02T06:12:13
+# 1.1 , 2.2, 3.3 , 2022-10-02T06:12:13
 
-1.1, 2.2
-3.3, 4.4
-5.5, 6.6
+1.1, 2.2, 3.3
+4.4, 5.5, 6.6
+7.7, 8.8, 9.9

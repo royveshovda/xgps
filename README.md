@@ -93,7 +93,7 @@ XGPS.Ports.start_port(:simulate)
 ### Auto-start from config
 By adding a line to config:
 ```elixir
-config :xgps, port_to_start: {:simulate,}
+config :xgps, port_to_start: {:simulate}
 ```
 
 ### Sending simulated position
@@ -102,6 +102,23 @@ Send a simulated position using one of the following commands:
 XGPS.Ports.send_simulated_no_fix()
 XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ```
+
+### Start simulator with positions in file
+
+By adding a line to config:
+```elixir
+config :xgps, port_to_start: {:simulate, "simulator_positions.txt"}
+```
+
+A simulator will start, and send the positions with 1 second delay between them. And continue from the start when reaching the end.
+
+#### Prepare the position file
+
+The repository have a simple position file called [simulator_positions.txt](simulator_positions.txt)
+This file have two options on how to give positions. One without timestamp, which will sent current system utc time. And one with timestamp, which will send the given timestamp.
+
+Have a look at the file [simulator_positions.txt](simulator_positions.txt) for details on how to format the file properly.
+
 
 ## Note
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.
