@@ -42,11 +42,13 @@ Add a line like this in you config:
   config :xgps, port_to_start: {"name-of-port"}
   ```
 
-### Config with init
+If your GPS is not requiering any special init commands, you will be OK with this line and the Generic driver.
+
+### Config with driver
 If you are using the Adafruit Ultimate GPS you can add:
 
   ```elixir
-  config :xgps, port_to_start: {"name-of-port", :init_adafruit_gps}
+  config :xgps, port_to_start: {"/dev/ttyUSB0", "AdafruitGps"}
   ```
 
 This will send a series of commands to your GPS to configure it.
@@ -59,6 +61,8 @@ The following commands are then sent:
 - "$PMTK397,0*23" => Disable nav-speed threshold
 
 These sentences will work to initialize other GPS-types supporting the PMTK command types.
+
+Other driver types can be found in the folder [lib/xgps/driver/](lib/xgps/driver/). If your GPS type is missing, you can first try the Generic driver. If not working, you can add a new driver yourself, with the needed init commands.
 
 ## Usage: Get position
 
