@@ -100,8 +100,7 @@ XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ```
 
 ## Future development
-- Update to current version for all dependencies
-- Simulation reading from file
+- Consider switching to Phoenix PubSub: [https://github.com/phoenixframework/phoenix_pubsub](https://github.com/phoenixframework/phoenix_pubsub)
 
 
 ## Note
