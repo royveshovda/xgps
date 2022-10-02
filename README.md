@@ -99,9 +99,5 @@ XGPS.Ports.send_simulated_no_fix()
 XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ```
 
-## Future development
-- Consider switching to Phoenix PubSub: [https://github.com/phoenixframework/phoenix_pubsub](https://github.com/phoenixframework/phoenix_pubsub)
-
-
 ## Note
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.
