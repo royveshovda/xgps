@@ -1,6 +1,8 @@
 defmodule XGPS.Port.Simulator do
   use GenServer
 
+  require Logger
+
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
   end
@@ -9,11 +11,12 @@ defmodule XGPS.Port.Simulator do
     defstruct [
       file_name: nil,
       positions: nil,
-      next_position_index: nil
+      next_position_index: nil,
+      parent_pid: nil
       ]
   end
 
-  def init({file_name}) do
+  def init({file_name, parent_pid}) do
     {:ok, content} = File.read(file_name)
     positions =
       content
@@ -23,24 +26,30 @@ defmodule XGPS.Port.Simulator do
       |> Enum.map(&(String.split(&1, ",")))
       |> Enum.map(&(parse_line(&1)))
 
-    state = %State{file_name: file_name, positions: positions, next_position_index: 0}
+    state = %State{file_name: file_name, positions: positions, next_position_index: 0, parent_pid: parent_pid}
     Process.send_after(self(), :send_position, 1000)
-    IO.puts "Simulator running with initial state: #{inspect state}"
+    Logger.info("Simulator running with initial state: #{inspect state}")
     {:ok, state}
   end
 
-  def handle_info(:send_position, %State{positions: positions, next_position_index: idx} = state) do
-    #pos = Enum.at(positions, idx)
-    #IO.inspect pos
-    # TODO: Get position of supervisor
+  def handle_info(:send_position, %State{positions: positions, next_position_index: idx, parent_pid: parent_pid} = state) do
+    pos = Enum.at(positions, idx)
 
-    next_idx =
-      case idx >= (length(positions) - 1) do
-        true -> 0
-        false -> idx + 1
-      end
+    send_position(parent_pid, pos)
+    next_idx = rem(idx+1, length(positions))
     Process.send_after(self(), :send_position, 1000)
     {:noreply, %{state | next_position_index: next_idx}}
+  end
+
+  defp send_position(parent_pid, {lat, lon}) do
+    time = NaiveDateTime.utc_now()
+    send_position(parent_pid, {lat, lon, time})
+  end
+
+  defp send_position(parent_pid, {lat, lon, time}) do
+    Logger.debug("Sending: #{lat}, #{lon} -- #{time}")
+    XGPS.Port.Supervisor.send_simulated_position(parent_pid, lat, lon, 0, time)
+    :ok
   end
 
   defp parse_line(line_pieces) do

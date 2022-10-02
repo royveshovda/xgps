@@ -1,6 +1,8 @@
 defmodule XGPS.Port.Supervisor do
   use Supervisor
 
+  require Logger
+
   def start_link(args) do
     Supervisor.start_link(__MODULE__, args)
   end
@@ -46,7 +48,7 @@ defmodule XGPS.Port.Supervisor do
   end
 
   def init({:simulate, file_name}) do
-    IO.puts "simulate"
+    Logger.info("Simulate")
     children = [
       %{
         id: PortReader,
@@ -56,7 +58,7 @@ defmodule XGPS.Port.Supervisor do
       },
       %{
         id: PortSimulator,
-        start: { XGPS.Port.Simulator, :start_link, [{file_name}]},
+        start: { XGPS.Port.Simulator, :start_link, [{file_name, self()}]},
         restart: :transient,
         type: :worker
       }

@@ -1,6 +1,8 @@
 defmodule XGPS.Ports do
   use DynamicSupervisor
 
+  require Logger
+
   @doc """
   Open one port to be consumed. Needs to have one GPS attached to the port to work.
   To simulate, give port_name = :simulate
@@ -139,7 +141,7 @@ defmodule XGPS.Ports do
       nil ->
         :ok
       portname_with_args ->
-        IO.puts("Start port directly")
+        Logger.debug("Start port directly")
         child =
           %{
             id: XGPS.Port.Supervisor,
