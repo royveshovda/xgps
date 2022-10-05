@@ -16,6 +16,9 @@ defmodule XGPS.Port.Simulator do
       ]
   end
 
+  ###
+  ### Callbacks
+  ###
   def init({file_name, parent_pid}) do
     {:ok, content} = File.read(file_name)
     positions =
@@ -41,6 +44,9 @@ defmodule XGPS.Port.Simulator do
     {:noreply, %{state | next_position_index: next_idx}}
   end
 
+  ###
+  ### Priv
+  ###
   defp send_position(parent_pid, {lat, lon, alt}) do
     time = NaiveDateTime.utc_now()
     send_position(parent_pid, {lat, lon, alt, time})

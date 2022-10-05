@@ -3,6 +3,12 @@ defmodule XGPS.Ports do
 
   require Logger
 
+  def start_link do
+    result = {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    start_port_if_defined_in_config(pid)
+    result
+  end
+
   @doc """
   Open one port to be consumed. Needs to have one GPS attached to the port to work.
   To simulate, give port_name = :simulate
@@ -130,12 +136,16 @@ defmodule XGPS.Ports do
     end
   end
 
-  def start_link do
-    result = {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
-    start_port_if_defined_in_config(pid)
-    result
+  ###
+  ### Callbacks
+  ###
+  def init(:ok) do
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  ###
+  ### Priv
+  ###
   defp start_port_if_defined_in_config(pid) do
     case Application.get_env(:xgps, :port_to_start) do
       nil ->
@@ -152,12 +162,6 @@ defmodule XGPS.Ports do
         res = {:ok, _pid} = DynamicSupervisor.start_child(pid, child)
         res
     end
-  end
-
-  # Callbacks
-
-  def init(:ok) do
-    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
   defp get_running_simulators do
