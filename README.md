@@ -125,7 +125,7 @@ This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([
 
 ## Supervisor tree
 
-The supervisor tree will look different if simulator running or not. This diagram shows two ports running at the same time. One connected to a physical UART, while the other one has a simulator running.
+The supervisor tree will look different if the simulator is running or not. This diagram shows two ports running at the same time. One connected to a physical UART, while the other one has a simulator running.
 
 ```mermaid
 flowchart LR
