@@ -13,9 +13,11 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:xgps, "~> 0.6.0"}]
+      [{:xgps, ">= 0.0.0"}]
     end
     ```
+
+  (Latest version can be found from the badge above. You can pin to a version by writing `{:xgps, "~> x.y.z"}`)
 
   2. Ensure `xgps` is started before your application:
 
