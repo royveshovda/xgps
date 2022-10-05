@@ -122,3 +122,19 @@ Have a look at the file [simulator_positions.txt](simulator_positions.txt) for d
 
 ## Note
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.
+
+## Supervisor tree
+
+The supervisor tree will look different if simulator running or not. This diagram shows two ports running at the same time. One connected to a physical UART, while the other one has a simulator running.
+
+```mermaid
+flowchart LR
+    X((XGPS)) --> PORTS{{Ports}}
+    PORTS --> PORT1(Port)
+    PORT1 --> READ1([Reader])
+    READ1 --> UART[[Uart]]
+    PORTS --> PORT2(Port)
+    PORT2 --> READ2([Reader])
+    PORT2 --> SIM([Simulator])
+    
+```
