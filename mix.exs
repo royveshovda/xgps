@@ -22,7 +22,7 @@ defmodule XGPS.Mixfile do
 
   defp deps do
     [{:circuits_uart, "~> 1.5"},
-     {:mix_test_watch, "~> 1.1"},
+     {:mix_test_watch, "~> 1.1", only: [:dev, :test], runtime: false},
      {:gen_stage, "~> 1.1.2"},
      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
