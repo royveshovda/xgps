@@ -3,6 +3,12 @@ defmodule XGPS.Ports do
 
   require Logger
 
+  def start_link do
+    result = {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    start_port_if_defined_in_config(pid)
+    result
+  end
+
   @doc """
   Open one port to be consumed. Needs to have one GPS attached to the port to work.
   To simulate, give port_name = :simulate
@@ -10,8 +16,8 @@ defmodule XGPS.Ports do
   def start_port(port_name) do
     child =
     %{
-      id: XGPS.Port.Supervisor,
-      start: {XGPS.Port.Supervisor, :start_link, [port_name]},
+      id: XGPS.Port,
+      start: {XGPS.Port, :start_link, [port_name]},
       restart: :transient,
       type: :supervisor
     }
@@ -21,8 +27,8 @@ defmodule XGPS.Ports do
   def start_simulator(file_name) do
     child =
     %{
-      id: XGPS.Port.Reader,
-      start: {XGPS.Port.Supervisor, :start_link, [{:simulate, file_name}]},
+      id: XGPS.Port,
+      start: {XGPS.Port, :start_link, [{:simulate, file_name}]},
       restart: :transient,
       type: :supervisor
     }
@@ -37,7 +43,7 @@ defmodule XGPS.Ports do
     children =
       Supervisor.which_children(__MODULE__)
       |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
-      |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
+      |> Enum.map(fn(pid) -> {pid, XGPS.Port.get_port_name(pid)} end)
       |> Enum.filter(fn({_pid, port_name}) -> port_name == port_name_to_stop end)
       |> Enum.map(fn({pid, _port_name}) -> pid end)
 
@@ -55,7 +61,7 @@ defmodule XGPS.Ports do
   def get_running_port_names do
     DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
-    |> Enum.map(fn(pid) -> XGPS.Port.Supervisor.get_port_name(pid) end)
+    |> Enum.map(fn(pid) -> XGPS.Port.get_port_name(pid) end)
   end
 
   @doc """
@@ -67,7 +73,7 @@ defmodule XGPS.Ports do
       0 -> {:error, :no_port_running}
       _ ->
        {_, pid, :supervisor, _} = Enum.at(children, 0)
-       gps_data = XGPS.Port.Supervisor.get_gps_data(pid)
+       gps_data = XGPS.Port.get_gps_data(pid)
        {:ok, gps_data}
     end
   end
@@ -92,7 +98,7 @@ defmodule XGPS.Ports do
       _ ->
         {sim_pid, :simulate} = Enum.at(simulators, 0)
 
-        XGPS.Port.Supervisor.send_simulated_position(sim_pid, lat, lon, alt, date_time)
+        XGPS.Port.send_simulated_position(sim_pid, lat, lon, alt, date_time)
         :ok
     end
   end
@@ -104,7 +110,7 @@ defmodule XGPS.Ports do
       _ ->
         {sim_pid, :simulate} = Enum.at(simulators, 0)
 
-        XGPS.Port.Supervisor.reset_simulated_port_state(sim_pid)
+        XGPS.Port.reset_simulated_port_state(sim_pid)
         :ok
     end
   end
@@ -125,17 +131,21 @@ defmodule XGPS.Ports do
       0 -> {:error, :no_simulator_running}
       _ ->
         {sim_pid, :simulate} = Enum.at(simulators, 0)
-        XGPS.Port.Supervisor.send_simulated_no_fix(sim_pid, date_time)
+        XGPS.Port.send_simulated_no_fix(sim_pid, date_time)
         :ok
     end
   end
 
-  def start_link do
-    result = {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
-    start_port_if_defined_in_config(pid)
-    result
+  ###
+  ### Callbacks
+  ###
+  def init(:ok) do
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  ###
+  ### Priv
+  ###
   defp start_port_if_defined_in_config(pid) do
     case Application.get_env(:xgps, :port_to_start) do
       nil ->
@@ -144,8 +154,8 @@ defmodule XGPS.Ports do
         Logger.debug("Start port directly")
         child =
           %{
-            id: XGPS.Port.Supervisor,
-            start: {XGPS.Port.Supervisor, :start_link, [portname_with_args]},
+            id: XGPS.Port,
+            start: {XGPS.Port, :start_link, [portname_with_args]},
             restart: :transient,
             type: :supervisor
           }
@@ -154,16 +164,10 @@ defmodule XGPS.Ports do
     end
   end
 
-  # Callbacks
-
-  def init(:ok) do
-    DynamicSupervisor.init(strategy: :one_for_one)
-  end
-
   defp get_running_simulators do
     DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn({_, pid, :supervisor, _}) -> pid end)
-    |> Enum.map(fn(pid) -> {pid, XGPS.Port.Supervisor.get_port_name(pid)} end)
+    |> Enum.map(fn(pid) -> {pid, XGPS.Port.get_port_name(pid)} end)
     |> Enum.filter(fn({_pid, port_name}) -> port_name == :simulate end)
   end
 end
