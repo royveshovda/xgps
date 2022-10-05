@@ -1,4 +1,4 @@
-defmodule XGPS.Port.Supervisor do
+defmodule XGPS.Port do
   use Supervisor
 
   require Logger

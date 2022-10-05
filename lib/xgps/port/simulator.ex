@@ -54,7 +54,7 @@ defmodule XGPS.Port.Simulator do
 
   defp send_position(parent_pid, {lat, lon, alt, time}) do
     Logger.debug("Sending: #{lat}, #{lon} -- #{time}")
-    XGPS.Port.Supervisor.send_simulated_position(parent_pid, lat, lon, alt, time)
+    XGPS.Port.send_simulated_position(parent_pid, lat, lon, alt, time)
     :ok
   end
 
