@@ -140,3 +140,42 @@ flowchart LR
     PORT2 --> SIM([Simulator])
     
 ```
+
+## Config
+
+If you want to start a port automatically on app start, you can use one of the following examples:
+
+### Set UART
+
+`config :xgps, port_to_start: {"/dev/ttyUSB0"}`
+
+
+### Set UART and DriverType
+
+`config :xgps, port_to_start: {"/dev/ttyUSB0", "AdafruitGps"}`
+
+
+### Set simulate
+
+`config :xgps, port_to_start: {:simulate}`
+
+
+### Set Simulate and file with positions
+
+`config :xgps, port_to_start: {:simulate, "simulator_positions.txt"}`
+
+
+### Set using environment variables
+
+```elixir
+port_to_start =
+  with {:ok, port} <- System.fetch_env("XGPS_PORT"),
+       {:ok, driver} <- System.fetch_env("XGPS_DRIVER") do
+    {port, driver}
+  else
+    _ ->
+      nil
+  end
+
+config :xgps, port_to_start: port_to_start
+```
