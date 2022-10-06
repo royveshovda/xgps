@@ -13,9 +13,11 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:xgps, "~> 0.6.0"}]
+      [{:xgps, ">= 0.0.0"}]
     end
     ```
+
+  (Latest version can be found from the badge above. You can pin to a version by writing `{:xgps, "~> x.y.z"}`)
 
   2. Ensure `xgps` is started before your application:
 
@@ -125,7 +127,7 @@ This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([
 
 ## Supervisor tree
 
-The supervisor tree will look different if simulator running or not. This diagram shows two ports running at the same time. One connected to a physical UART, while the other one has a simulator running.
+The supervisor tree will look different if the simulator is running or not. This diagram shows two ports running at the same time. One connected to a physical UART, while the other one has a simulator running.
 
 ```mermaid
 flowchart LR
