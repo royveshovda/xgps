@@ -1,6 +1,6 @@
-defmodule XGPS.Driver.AdafruitGps do
+defmodule XGPS.Driver.PMTK do
   @moduledoc """
-  XGPS driver for Adafruit
+  XGPS driver for PMTK GPS-types (like Adafruit GPS)
   """
 
   alias Circuits.UART
