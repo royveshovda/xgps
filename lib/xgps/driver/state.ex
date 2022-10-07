@@ -3,6 +3,7 @@ defmodule XGPS.Driver.State do
     gps_data: nil,
     pid: nil,
     port_name: nil,
-    mod: nil
+    mod: nil,
+    speed: nil
   ]
 end

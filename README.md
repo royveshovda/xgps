@@ -50,7 +50,7 @@ If your GPS is not requiering any special init commands, you will be OK with thi
 If you are using the Adafruit Ultimate GPS you can add:
 
   ```elixir
-  config :xgps, port_to_start: {"/dev/ttyUSB0", "AdafruitGps"}
+  config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK"}
   ```
 
 This will send a series of commands to your GPS to configure it.
@@ -152,7 +152,11 @@ If you want to start a port automatically on app start, you can use one of the f
 
 ### Set UART and DriverType
 
-`config :xgps, port_to_start: {"/dev/ttyUSB0", "AdafruitGps"}`
+`config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK"}`
+
+### Set UART, DriverType and speed (baud rate)
+
+`config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK", 9600}`
 
 
 ### Set simulate

@@ -6,22 +6,27 @@ defmodule XGPS.Port.Reader do
   alias Circuits.UART
   alias XGPS.Driver.State
 
-  # For legacy purpose
-  def start_link({port_name, :init_adafruit_gps}),
-    do: start_link({port_name, XGPS.Driver.AdafruitGps})
+  @default_speed 9_600
+  @default_driver "Generic"
 
   def start_link({:simulate}),
-    do: start_link({:simulate, XGPS.Driver.Simulator})
+    do: GenServer.start_link(__MODULE__, {:simulate, XGPS.Driver.Simulator, @default_speed})
 
-  def start_link({port_name}) when is_binary(port_name),
-    do: start_link({port_name, XGPS.Driver.Generic})
+  def start_link({port_name}) when is_binary(port_name) do
+    start_link({port_name, @default_driver, @default_speed})
+  end
 
-  def start_link({port_name, mod}) when is_atom(mod),
-    do: GenServer.start_link(__MODULE__, {port_name, mod})
+  def start_link({port_name, driver}) when is_binary(port_name) do
+    start_link({port_name, driver, @default_speed})
+  end
 
-  def start_link({port_name, driver}) when is_binary(driver) do
+  def start_link({port_name, driver, speed}) when is_binary(port_name) and is_binary(driver) do
     mod = :"Elixir.XGPS.Driver.#{driver}"
-    GenServer.start_link(__MODULE__, {port_name, mod})
+    start_link({port_name, mod, speed})
+  end
+
+  def start_link({port_name, mod, speed}) when is_binary(port_name) and is_atom(mod) do
+    GenServer.start_link(__MODULE__, {port_name, mod, speed})
   end
 
   def get_gps_data(pid) do
@@ -35,14 +40,14 @@ defmodule XGPS.Port.Reader do
   ###
   ### Callbacks
   ###
-  def init({port_name, mod}) do
+  def init({port_name, mod, speed}) do
     Logger.info("Start receiver #{mod} on port #{port_name}")
     {:ok, uart_pid} = UART.start_link()
 
     gps_data = %XGPS.GpsData{has_fix: false}
 
     {:ok, state} =
-      %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, mod: mod}
+      %State{gps_data: gps_data, pid: uart_pid, port_name: port_name, mod: mod, speed: speed}
       |> mod.init()
 
     {:ok, state}
