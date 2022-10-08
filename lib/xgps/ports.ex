@@ -7,7 +7,7 @@ defmodule XGPS.Ports do
   Open one port to be consumed. Needs to have one GPS attached to the port to work.
   To simulate, give port_name = :simulate.
   Either give just the name of the port as parameter, or a keyword list with the following format: [port_name: "<PORTNAME>", driver: "<DRIVERNAME>", speed: <SPEED_AS_INT>].
-  Only portname is mandatory in the keyword list.
+  Only port_name is mandatory in the keyword list. Default values: driver: "Generic", speed: 9600
   """
   def start_link do
     result = {:ok, pid} = DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
