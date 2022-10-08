@@ -29,20 +29,32 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   3. To make an effort to be platform independent, XGPS uses [circuits_uart](https://github.com/elixir-circuits/circuits_uart) for the dirty details. Please make sure to follow the instructions for circuits_uart to make this compile and run on your system.
 
+
 ## Usage: start
+
 ### Manually
+
 Simply call:
 
-  ```elixir
-  XGPS.Ports.start_port("name-of-port")
-  ```
+```elixir
+XGPS.Ports.start_port("name-of-port")
+```
+
+If you want to set more parameters on manual start, you can use the following format:
+
+```elixir
+XGPS.Ports.start_port([port_name: "/dev/ttyUSB0", driver: "PMTK", speed: 9600])
+```
+
+Only `port_name` is mandatory.
+
 
 ### Config
 Add a line like this in you config:
 
-  ```elixir
-  config :xgps, port_to_start: {"name-of-port"}
-  ```
+```elixir
+config :xgps, port_to_start: [port_name: "name-of-port"]
+```
 
 If your GPS is not requiering any special init commands, you will be OK with this line and the Generic driver.
 
@@ -50,7 +62,7 @@ If your GPS is not requiering any special init commands, you will be OK with thi
 If you are using the Adafruit Ultimate GPS you can add:
 
   ```elixir
-  config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK"}
+  config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]
   ```
 
 This will send a series of commands to your GPS to configure it.
@@ -95,7 +107,7 @@ XGPS.Ports.start_port(:simulate)
 ### Auto-start from config
 By adding a line to config:
 ```elixir
-config :xgps, port_to_start: {:simulate}
+config :xgps, port_to_start: [port_name: :simulate]
 ```
 
 ### Sending simulated position
@@ -109,7 +121,7 @@ XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 
 By adding a line to config:
 ```elixir
-config :xgps, port_to_start: {:simulate, "simulator_positions.txt"}
+config :xgps, port_to_start: [port_name: :simulate, file_name: "simulator_positions.txt"]
 ```
 
 A simulator will start, and send the positions with 1 second delay between them. And continue from the start when reaching the end.
@@ -147,26 +159,25 @@ If you want to start a port automatically on app start, you can use one of the f
 
 ### Set UART
 
-`config :xgps, port_to_start: {"/dev/ttyUSB0"}`
+`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0"]
 
 
 ### Set UART and DriverType
 
-`config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK"}`
+`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]`
 
 ### Set UART, DriverType and speed (baud rate)
 
-`config :xgps, port_to_start: {"/dev/ttyUSB0", "PMTK", 9600}`
-
+`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK", speed: 9600]`
 
 ### Set simulate
 
-`config :xgps, port_to_start: {:simulate}`
+`config :xgps, port_to_start: [port_name: :simulate]`
 
 
 ### Set Simulate and file with positions
 
-`config :xgps, port_to_start: {:simulate, "simulator_positions.txt"}`
+`config :xgps, port_to_start: [port_name: :simulate, file_name: "simulator_positions.txt"]`
 
 
 ### Set using environment variables
@@ -175,7 +186,7 @@ If you want to start a port automatically on app start, you can use one of the f
 port_to_start =
   with {:ok, port} <- System.fetch_env("XGPS_PORT"),
        {:ok, driver} <- System.fetch_env("XGPS_DRIVER") do
-    {port, driver}
+    [port_name: port, driver: driver]
   else
     _ ->
       nil
