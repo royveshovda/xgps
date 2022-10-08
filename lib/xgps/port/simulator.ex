@@ -19,7 +19,7 @@ defmodule XGPS.Port.Simulator do
   ###
   ### Callbacks
   ###
-  def init({file_name, parent_pid}) do
+  def init(file_name: file_name, parent_pid: parent_pid) do
     {:ok, content} = File.read(file_name)
     positions =
       content

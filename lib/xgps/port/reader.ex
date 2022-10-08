@@ -6,27 +6,8 @@ defmodule XGPS.Port.Reader do
   alias Circuits.UART
   alias XGPS.Driver.State
 
-  @default_speed 9_600
-  @default_driver "Generic"
-
-  def start_link({:simulate}),
-    do: GenServer.start_link(__MODULE__, {:simulate, XGPS.Driver.Simulator, @default_speed})
-
-  def start_link({port_name}) when is_binary(port_name) do
-    start_link({port_name, @default_driver, @default_speed})
-  end
-
-  def start_link({port_name, driver}) when is_binary(port_name) do
-    start_link({port_name, driver, @default_speed})
-  end
-
-  def start_link({port_name, driver, speed}) when is_binary(port_name) and is_binary(driver) do
-    mod = :"Elixir.XGPS.Driver.#{driver}"
-    start_link({port_name, mod, speed})
-  end
-
-  def start_link({port_name, mod, speed}) when is_binary(port_name) and is_atom(mod) do
-    GenServer.start_link(__MODULE__, {port_name, mod, speed})
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args)
   end
 
   def get_gps_data(pid) do
@@ -40,7 +21,25 @@ defmodule XGPS.Port.Reader do
   ###
   ### Callbacks
   ###
-  def init({port_name, mod, speed}) do
+  def init(port_name: :simulate) do
+    Logger.info("Start Simulator reader")
+
+    gps_data = %XGPS.GpsData{has_fix: false}
+
+    {:ok, state} =
+      %State{gps_data: gps_data, pid: nil, port_name: :simulate, mod: XGPS.Driver.Simulator, speed: nil}
+      |> XGPS.Driver.Simulator.init()
+
+    {:ok, state}
+  end
+
+
+  def init(args) do
+    port_name = Keyword.get(args, :port_name)
+    driver  = Keyword.get(args, :driver, "Generic")
+    speed = Keyword.get(args, :speed, 9_600)
+
+    mod = :"Elixir.XGPS.Driver.#{driver}"
     Logger.info("Start receiver #{mod} on port #{port_name}")
     {:ok, uart_pid} = UART.start_link()
 

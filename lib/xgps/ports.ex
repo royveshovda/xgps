@@ -17,7 +17,7 @@ defmodule XGPS.Ports do
     child =
     %{
       id: XGPS.Port,
-      start: {XGPS.Port, :start_link, [port_name]},
+      start: {XGPS.Port, :start_link, [[port_name: port_name]]},
       restart: :transient,
       type: :supervisor
     }
@@ -28,7 +28,7 @@ defmodule XGPS.Ports do
     child =
     %{
       id: XGPS.Port,
-      start: {XGPS.Port, :start_link, [{:simulate, file_name}]},
+      start: {XGPS.Port, :start_link, [[port_name: :simulate, file_name: file_name]]},
       restart: :transient,
       type: :supervisor
     }
@@ -152,6 +152,7 @@ defmodule XGPS.Ports do
         :ok
       portname_with_args ->
         Logger.debug("Start port directly")
+        Logger.debug(inspect(portname_with_args))
         child =
           %{
             id: XGPS.Port,

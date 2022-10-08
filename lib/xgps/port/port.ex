@@ -47,18 +47,18 @@ defmodule XGPS.Port do
     send reader_pid, {:simulator, :simulate, :reset_gps_state}
   end
 
-  def init({:simulate, file_name}) do
+  def init(port_name: :simulate, file_name: file_name) do
     Logger.info("Simulate")
     children = [
       %{
         id: PortReader,
-        start: { XGPS.Port.Reader, :start_link, [{:simulate}]},
+        start: { XGPS.Port.Reader, :start_link, [[port_name: :simulate]]},
         restart: :transient,
         type: :worker
       },
       %{
         id: PortSimulator,
-        start: { XGPS.Port.Simulator, :start_link, [{file_name, self()}]},
+        start: { XGPS.Port.Simulator, :start_link, [[file_name: file_name, parent_pid: self()]]},
         restart: :transient,
         type: :worker
       }
