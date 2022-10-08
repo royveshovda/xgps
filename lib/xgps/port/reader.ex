@@ -6,6 +6,10 @@ defmodule XGPS.Port.Reader do
   alias Circuits.UART
   alias XGPS.Driver.State
 
+  @doc """
+  Arguments given as a keyword list like this: [port_name: "<PORTNAME>", driver: "<DRIVERNAME>", speed: <SPEED_AS_INT>].
+  Only portname is mandatory in the keyword list.
+  """
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
   end
