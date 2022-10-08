@@ -13,6 +13,17 @@ defmodule XGPS.Ports do
   Open one port to be consumed. Needs to have one GPS attached to the port to work.
   To simulate, give port_name = :simulate
   """
+  def start_port(args) when is_list(args) do
+    child =
+    %{
+      id: XGPS.Port,
+      start: {XGPS.Port, :start_link, [args]},
+      restart: :transient,
+      type: :supervisor
+    }
+    DynamicSupervisor.start_child(__MODULE__, child)
+  end
+
   def start_port(port_name) do
     child =
     %{
