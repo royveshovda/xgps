@@ -4,7 +4,7 @@ defmodule XGPSSimulatorTest do
   # Also important to slose the :simulate port after completion
 
   setup_all do
-    {:ok, _pid} = XGPS.Ports.start_port({:simulate})
+    {:ok, _pid} = XGPS.Ports.start_port(:simulate)
 
     {:ok, _pid2} = XGPS.Test.Subscriber.start_link()
     on_exit fn ->
