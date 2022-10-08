@@ -5,6 +5,8 @@ GPS for Elixir
 
 XGPS runs as an application and will start along with you application, and connect to an serial port to get GPS data.
 
+## [__!!! Breaking changes for 1.0 !!!__](breaking_1.0.md)
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
