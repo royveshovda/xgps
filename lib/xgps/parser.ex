@@ -1,21 +1,28 @@
 defmodule XGPS.Parser do
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
 
-  def init([]) do
-    {:ok, %{}}
-  end
+  require Logger
 
   def parse_sentence(sentence) do
-    case unwrap_sentence(sentence) do
-      {:ok, body} ->
-        body
-        |> match_type
-        |> parse_content
-      {:error, :checksum} ->
-        {:error, :checksum}
+    case valid_sentence?(sentence) do
+      :true ->
+        case unwrap_sentence(sentence) do
+          {:ok, body} ->
+            body
+            |> match_type
+            |> parse_content
+          {:error, :checksum} ->
+            Logger.warning("Wrong checksum for sentence: " <> sentence)
+            {:error, :checksum}
+        end
+      _ ->
+        Logger.warning("Not valid sentence: " <> sentence)
+        {:error, :not_valid}
     end
+
+  end
+
+  defp valid_sentence?(sentence) do
+    String.contains?(sentence, "$") and String.contains?(sentence, "*")
   end
 
   defp unwrap_sentence(sentence) do
@@ -44,7 +51,9 @@ defmodule XGPS.Parser do
   end
 
   defp get_type(["GPRMC"|content]), do: {:rmc, content}
+  defp get_type(["GNRMC"|content]), do: {:rmc, content}
   defp get_type(["GPGGA"|content]), do: {:gga, content}
+  defp get_type(["GNGGA"|content]), do: {:gga, content}
   defp get_type(content), do: {:unknown, content}
 
   defp parse_content({:rmc, content}) do
@@ -59,6 +68,18 @@ defmodule XGPS.Parser do
           track_angle: parse_float(Enum.at(content, 7)),
           date: Enum.at(content, 8) |> parse_date,
           magnetic_variation: parse_float(Enum.at(content, 9))
+        }
+      13 ->
+        %XGPS.Messages.RMC{
+          time: parse_time(Enum.at(content, 0)),
+          status: Enum.at(content, 1) |> parse_string,
+          latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
+          longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
+          speed_over_groud: parse_float(Enum.at(content, 6)),
+          track_angle: parse_float(Enum.at(content, 7)),
+          date: Enum.at(content, 8) |> parse_date,
+          #magnetic_variation: parse_float(Enum.at(content, 9))
+          # TODO: Parse missing
         }
       _ -> {:unknown, :unknown_content_length}
     end
