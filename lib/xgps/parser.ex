@@ -72,12 +72,12 @@ defmodule XGPS.Parser do
       13 ->
         %XGPS.Messages.RMC{
           time: parse_time(Enum.at(content, 0)),
-          status: Enum.at(content, 1) |> parse_string,
-          latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
-          longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
-          speed_over_groud: parse_float(Enum.at(content, 6)),
-          track_angle: parse_float(Enum.at(content, 7)),
-          date: Enum.at(content, 8) |> parse_date,
+          # status: Enum.at(content, 1) |> parse_string,
+          # latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
+          # longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
+          # speed_over_groud: parse_float(Enum.at(content, 6)),
+          # track_angle: parse_float(Enum.at(content, 7)),
+          # date: Enum.at(content, 8) |> parse_date,
           #magnetic_variation: parse_float(Enum.at(content, 9))
           # TODO: Parse missing
         }
@@ -127,10 +127,11 @@ defmodule XGPS.Parser do
   defp parse_string(value), do: value
 
   defp parse_time(time) when length(time) < 6, do: nil
-  defp parse_time(time) do
+  defp parse_time(time) when is_binary(time) do
     parts = String.split(time, ".")
     parse_hours_minutes_seconds_ms(parts)
   end
+  defp parse_time(_), do: nil
 
   defp parse_hours_minutes_seconds_ms([main]) when length(main) != 6, do: :unknown_format
   defp parse_hours_minutes_seconds_ms([main, _millis]) when length(main) != 6, do: :unknown_format

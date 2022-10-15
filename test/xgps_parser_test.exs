@@ -88,4 +88,20 @@ defmodule XGPSParserTest do
     actual = XGPS.Parser.parse_sentence(sentence)
     assert expected == actual
   end
+
+  test "parse sentence empty RMC" do
+    sentence = "$GNRMC,,V,,,,,,,,,,N,V*37"
+    expected = expected = %XGPS.Messages.RMC{
+      time: nil,
+      status: nil,
+      latitude: nil,
+      longitude: nil,
+      speed_over_groud: nil,
+      track_angle: nil,
+      date: nil,
+      magnetic_variation: nil
+    }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
 end
