@@ -41,7 +41,7 @@ defmodule XGPS.Port.Reader do
   def init(args) do
     port_name = Keyword.get(args, :port_name)
     driver  = Keyword.get(args, :driver, "Generic")
-    speed = Keyword.get(args, :speed, 9_600)
+    speed = Keyword.get(args, :speed, nil)
 
     mod = :"Elixir.XGPS.Driver.#{driver}"
     Logger.info("Start receiver #{mod} on port #{port_name}")

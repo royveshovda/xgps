@@ -22,6 +22,7 @@ defmodule XGPS.Example.Consumer do
   def handle_events(events, _from, state) do
     for event <- events do
       IO.inspect {self(), event}
+      :ok
     end
     {:noreply, [], state}
   end

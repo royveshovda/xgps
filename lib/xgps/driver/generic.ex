@@ -8,8 +8,14 @@ defmodule XGPS.Driver.Generic do
   alias Circuits.UART
 
   def init(%{pid: pid, port_name: port_name, speed: speed} = state) do
-    :ok = UART.configure(pid, framing: {UART.Framing.Line, separator: "\r\n"})
-    case UART.open(pid, port_name, speed: speed, active: true) do
+    opts =
+      case speed do
+        nil ->
+          [framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+        _->
+          [speed: speed, framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+      end
+    case UART.open(pid, port_name, opts) do
       {:error, :enoent} ->
         Logger.error("Could not find UART port")
         :error

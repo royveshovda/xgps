@@ -20,5 +20,8 @@ defmodule XGPS.Messages.RMC do
             speed_over_groud: nil,
             track_angle: nil,
             date: nil,
-            magnetic_variation: nil
+            magnetic_variation: nil,
+            magnetic_variation_direction: nil,
+            mode: nil,
+            faa_mode: nil
 end
