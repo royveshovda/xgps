@@ -14,7 +14,7 @@ defmodule XGPS.Driver.PMTK do
         _-> [speed: speed, framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
       end
 
-    case UART.open(pid, port_name, speed: speed, active: true) do
+    case UART.open(pid, port_name, opts) do
       {:error, :enoent} ->
         Logger.error("Could not find UART port")
         :error

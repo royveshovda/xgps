@@ -10,8 +10,10 @@ defmodule XGPS.Driver.Generic do
   def init(%{pid: pid, port_name: port_name, speed: speed} = state) do
     opts =
       case speed do
-        nil -> [framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
-        _-> [speed: speed, framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+        nil ->
+          [framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+        _->
+          [speed: speed, framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
       end
     case UART.open(pid, port_name, opts) do
       {:error, :enoent} ->

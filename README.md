@@ -1,11 +1,12 @@
 # XGPS
+
 [![Hex version](https://img.shields.io/hexpm/v/xgps.svg "Hex version")](https://hex.pm/packages/xgps)
 
 GPS for Elixir
 
 XGPS runs as an application and will start along with you application, and connect to an serial port to get GPS data.
 
-## [__!!! Breaking changes for 1.0 !!!__](breaking_1.0.md)
+## [__!!! Breaking changes for 1.x !!!__](breaking_1.x.md)
 
 ## Installation
 
@@ -31,7 +32,6 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   3. To make an effort to be platform independent, XGPS uses [circuits_uart](https://github.com/elixir-circuits/circuits_uart) for the dirty details. Please make sure to follow the instructions for circuits_uart to make this compile and run on your system.
 
-
 ## Usage: start
 
 ### Manually
@@ -52,6 +52,7 @@ Only `port_name` is mandatory.
 
 
 ### Config
+
 Add a line like this in you config:
 
 ```elixir
@@ -61,14 +62,16 @@ config :xgps, port_to_start: [port_name: "name-of-port"]
 If your GPS is not requiering any special init commands, you will be OK with this line and the Generic driver.
 
 ### Config with driver
+
 If you are using the Adafruit Ultimate GPS you can add:
 
-  ```elixir
-  config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]
-  ```
+```elixir
+config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]
+```
 
 This will send a series of commands to your GPS to configure it.
 The following commands are then sent:
+
 - "$PMTK313,1*2E" => enable SBAS
 - "$PMTK319,1*24" => Set SBAS to not test mode
 - "$PMTK301,2*2E" => Enable SBAS to be used for DGPS
@@ -83,12 +86,13 @@ Other driver types can be found in the folder [lib/xgps/driver/](lib/xgps/driver
 ## Usage: Get position
 
 ### Manually
+
 This usage pattern is mostly for testing.
 Call:
 
-  ```elixir
-  XGPS.Ports.get_one_position
-  ```
+```elixir
+XGPS.Ports.get_one_position
+```
 
 to get the latest fixed positions.
 
@@ -102,18 +106,21 @@ Check out the code inside the example-folder for an implementation for a subscri
 
 ### Starting manually
 Start a simulated port by calling the following:
+
 ```elixir
 XGPS.Ports.start_port(:simulate)
 ```
 
 ### Auto-start from config
 By adding a line to config:
+
 ```elixir
 config :xgps, port_to_start: [port_name: :simulate]
 ```
 
 ### Sending simulated position
 Send a simulated position using one of the following commands:
+
 ```elixir
 XGPS.Ports.send_simulated_no_fix()
 XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
@@ -122,6 +129,7 @@ XGPS.Ports.send_simulated_position(1.1,2.2,3.3) # lat, lon, alt
 ### Start simulator with positions in file
 
 By adding a line to config:
+
 ```elixir
 config :xgps, port_to_start: [port_name: :simulate, file_name: "simulator_positions.txt"]
 ```
@@ -135,8 +143,8 @@ This file have two options on how to give positions. One without timestamp, whic
 
 Have a look at the file [simulator_positions.txt](simulator_positions.txt) for details on how to format the file properly.
 
-
 ## Note
+
 This application was tested on a Raspberry Pi using the AdaFruit Ultimate GPS ([1](https://www.adafruit.com/products/746), [2](https://www.adafruit.com/products/2324)), which essentially uses the chip MTK3339. Guarantees for other systems and chips cannot be given. But please provide feedback if working or not on other systems/chips.
 
 ## Supervisor tree
@@ -151,8 +159,7 @@ flowchart LR
     READ1 --> UART[[Uart]]
     PORTS --> PORT2(Port)
     PORT2 --> READ2([Reader])
-    PORT2 --> SIM([Simulator])
-    
+    PORT2 --> SIM([Simulator])   
 ```
 
 ## Config
@@ -161,25 +168,34 @@ If you want to start a port automatically on app start, you can use one of the f
 
 ### Set UART
 
-`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0"]
-
+```elixir
+config :xgps, port_to_start: [port_name: "/dev/ttyUSB0"]
+```
 
 ### Set UART and DriverType
 
-`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]`
+```elixir
+config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK"]
+```
 
 ### Set UART, DriverType and speed (baud rate)
 
-`config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK", speed: 9600]`
+```elixir
+  config :xgps, port_to_start: [port_name: "/dev/ttyUSB0", driver: "PMTK", speed: 9600]
+```elixir
 
 ### Set simulate
 
-`config :xgps, port_to_start: [port_name: :simulate]`
+```elixir
+config :xgps, port_to_start: [port_name: :simulate]
+```
 
 
 ### Set Simulate and file with positions
 
-`config :xgps, port_to_start: [port_name: :simulate, file_name: "simulator_positions.txt"]`
+```elixir
+config :xgps, port_to_start: [port_name: :simulate, file_name: "simulator_positions.txt"]
+```
 
 
 ### Set using environment variables
@@ -196,3 +212,7 @@ port_to_start =
 
 config :xgps, port_to_start: port_to_start
 ```
+
+## NMEA
+
+Most (read all) of GPS receivers out today sends NMEA 0183 sentences. A good description of these sentences can be found here: [https://gpsd.gitlab.io/gpsd/NMEA.html](https://gpsd.gitlab.io/gpsd/NMEA.html)
