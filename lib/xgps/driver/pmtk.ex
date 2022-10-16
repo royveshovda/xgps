@@ -8,7 +8,11 @@ defmodule XGPS.Driver.PMTK do
   alias Circuits.UART
 
   def init(%{pid: pid, port_name: port_name, speed: speed} = state) do
-    :ok = UART.configure(pid, framing: {UART.Framing.Line, separator: "\r\n"})
+    opts =
+      case speed do
+        nil -> [framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+        _-> [speed: speed, framing: {UART.Framing.Line, separator: "\r\n"}, active: true]
+      end
 
     case UART.open(pid, port_name, speed: speed, active: true) do
       {:error, :enoent} ->
