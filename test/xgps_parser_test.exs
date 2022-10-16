@@ -32,7 +32,8 @@ defmodule XGPSParserTest do
                   speed_over_groud: 1.37,
                   track_angle: 38.57,
                   date: date,
-                  magnetic_variation: nil
+                  magnetic_variation: nil,
+                  mode: "A"
                 }
     actual = XGPS.Parser.parse_sentence(sentence)
     assert expected == actual
@@ -50,7 +51,8 @@ defmodule XGPSParserTest do
                   speed_over_groud: nil,
                   track_angle: nil,
                   date: date,
-                  magnetic_variation: nil
+                  magnetic_variation: nil,
+                  mode: nil
                 }
     actual = XGPS.Parser.parse_sentence(sentence)
     assert expected == actual
@@ -91,15 +93,56 @@ defmodule XGPSParserTest do
 
   test "parse sentence empty RMC" do
     sentence = "$GNRMC,,V,,,,,,,,,,N,V*37"
-    expected = expected = %XGPS.Messages.RMC{
+    expected = %XGPS.Messages.RMC{
       time: nil,
-      status: nil,
+      status: "V",
       latitude: nil,
       longitude: nil,
       speed_over_groud: nil,
       track_angle: nil,
       date: nil,
-      magnetic_variation: nil
+      magnetic_variation: nil,
+      mode: "V",
+      faa_mode: "N"
+    }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence RMC 2" do
+    sentence = "$GPRMC,092750.000,A,5321.6802,N,00630.3372,W,0.02,31.66,280511,,,A*43"
+    {:ok, time} = Time.new(09,27,50,000)
+    {:ok, date} = Date.new(2011,5,28)
+    expected = %XGPS.Messages.RMC{
+      time: time,
+      status: "A",
+      latitude: 53.361336666666666,
+      longitude: -6.50562,
+      speed_over_groud: 0.02,
+      track_angle: 31.66,
+      date: date,
+      magnetic_variation: nil,
+      mode: "A"
+    }
+    actual = XGPS.Parser.parse_sentence(sentence)
+    assert expected == actual
+  end
+
+  test "parse sentence RMC 3" do
+    sentence = "$GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130901,011.3,E*62"
+    {:ok, time} = Time.new(08,18,36,000)
+    {:ok, date} = Date.new(2001,9,13)
+    expected = %XGPS.Messages.RMC{
+      time: time,
+      status: "A",
+      latitude: -37.86083333333333,
+      longitude: 145.12266666666667,
+      speed_over_groud: 0.0,
+      track_angle: 360.0,
+      date: date,
+      magnetic_variation: 11.3,
+      magnetic_variation_direction: "E",
+      mode: nil
     }
     actual = XGPS.Parser.parse_sentence(sentence)
     assert expected == actual

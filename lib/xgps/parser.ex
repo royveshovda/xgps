@@ -58,6 +58,18 @@ defmodule XGPS.Parser do
 
   defp parse_content({:rmc, content}) do
     case length(content) do
+      11 ->
+        %XGPS.Messages.RMC{
+          time: parse_time(Enum.at(content, 0)),
+          status: Enum.at(content, 1) |> parse_string,
+          latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
+          longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
+          speed_over_groud: parse_float(Enum.at(content, 6)),
+          track_angle: parse_float(Enum.at(content, 7)),
+          date: Enum.at(content, 8) |> parse_date,
+          magnetic_variation: parse_float(Enum.at(content, 9)),
+          magnetic_variation_direction: Enum.at(content, 10) |> parse_string
+        }
       12 ->
         %XGPS.Messages.RMC{
           time: parse_time(Enum.at(content, 0)),
@@ -67,19 +79,23 @@ defmodule XGPS.Parser do
           speed_over_groud: parse_float(Enum.at(content, 6)),
           track_angle: parse_float(Enum.at(content, 7)),
           date: Enum.at(content, 8) |> parse_date,
-          magnetic_variation: parse_float(Enum.at(content, 9))
+          magnetic_variation: parse_float(Enum.at(content, 9)),
+          magnetic_variation_direction: Enum.at(content, 10) |> parse_string,
+          mode: Enum.at(content, 11) |> parse_string
         }
       13 ->
         %XGPS.Messages.RMC{
           time: parse_time(Enum.at(content, 0)),
-          # status: Enum.at(content, 1) |> parse_string,
-          # latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
-          # longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
-          # speed_over_groud: parse_float(Enum.at(content, 6)),
-          # track_angle: parse_float(Enum.at(content, 7)),
-          # date: Enum.at(content, 8) |> parse_date,
-          #magnetic_variation: parse_float(Enum.at(content, 9))
-          # TODO: Parse missing
+          status: Enum.at(content, 1) |> parse_string,
+          latitude: parse_latitude(Enum.at(content, 2),Enum.at(content, 3)),
+          longitude: parse_longitude(Enum.at(content, 4),Enum.at(content, 5)),
+          speed_over_groud: parse_float(Enum.at(content, 6)),
+          track_angle: parse_float(Enum.at(content, 7)),
+          date: Enum.at(content, 8) |> parse_date,
+          magnetic_variation: parse_float(Enum.at(content, 9)),
+          magnetic_variation_direction: Enum.at(content, 10) |> parse_string,
+          faa_mode: Enum.at(content, 11) |> parse_string,
+          mode: Enum.at(content, 12) |> parse_string
         }
       _ -> {:unknown, :unknown_content_length}
     end
@@ -126,6 +142,7 @@ defmodule XGPS.Parser do
   defp parse_string(""), do: nil
   defp parse_string(value), do: value
 
+  defp parse_time(""), do: nil
   defp parse_time(time) when length(time) < 6, do: nil
   defp parse_time(time) when is_binary(time) do
     parts = String.split(time, ".")
@@ -146,6 +163,7 @@ defmodule XGPS.Parser do
     time
   end
 
+  defp parse_date(""), do: nil
   defp parse_date(date_raw) when length(date_raw) != 6, do: :unknown_format
   defp parse_date(date_raw) do
     {day,_} = String.slice(date_raw,0,2) |> Integer.parse
